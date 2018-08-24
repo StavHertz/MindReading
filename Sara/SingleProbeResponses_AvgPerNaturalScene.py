@@ -19,6 +19,7 @@ probe_name = 'probeC'
 pre_time = 0.1
 bin_width = 0.005
 bins = [x*bin_width for x in range(-20,51)]
+scale_psth = 15
 
 drive_path = os.path.normpath('d:/visual_coding_neuropixels')
 sys.path.append(os.path.normpath('d:/resources/swdb_2018_neuropixels/'))
@@ -53,26 +54,26 @@ for image_id in np.unique(ns_table['frame']):
     	spike_train = probe_spikes[unit_row['unit_id']]
     	stim_train = []
     	for ind, stim_row in frame_table.iterrows():
-            current_train = spike_train[(spike_train > stim_row['start'] - pre_stimulus_time) & (spike_train <= stim_row['end'])] - stim_row['start']
+            current_train = spike_train[(spike_train > stim_row['start'] - pre_time) & (spike_train <= stim_row['end'])] - stim_row['start']
             stim_train.append(current_train)
             all_trains[unit_row['unit_id']] = stim_train
+    # PSTH calculation & plotting
+    all_counts = []
+    fig,ax = plt.subplots(1,1,figsize=(15,20))
+    for i, unit_row in probe_units.iterrows():
+        counts, edges = np.histogram(np.hstack(all_trains[unit_row['unit_id']]), bins=bins)
+        plt.plot(edges[1:], unit_row['depth']+scale_psth * counts)
+        all_counts.append(counts)
+    ax.axvspan(-0.2,0,color='gray',alpha=0.2);
+    ax.set_xlim([-0.1, 0.25])
+    ax.set_xlabel('Time (sec)')
+    ax.set_title(fig_name)
+    fig.savefig(os.path.normpath('D:\\Images\\' + fig_name + '_sdf.png'))	
     # Heat map
     fig,ax = plt.subplots(1,1,figsize=(15,20))
     plt.imshow(np.vstack(all_counts))
     fig_name = 'Probe{}_Image {}'.format(probe_name[-1], image_id)
     ax.set_title(fig_name)
     fig.savefig(os.path.normpath('D:\\Images\\' + fig_name + '_heatmap.png'))
-
-    fig,ax = plt.subplots(1,1,figsize=(6,20))
-    for i, unit_row in probe_units.iterrows():
-    	counts, edges = np.histogram(np.hstack(all_trains[unit_row['unit_id']]), bins=bins)
-    	plt.plot(edges[1:], unit_row['depth']+15*counts, linewidth=0.7)
-    ax.set_ylabel('Depth')
-    ax.axvspan(-0.2,0,color='gray',alpha=0.2);
-    ax.set_xlim([-0.1, 0.25])
-    ax.set_xlabel('Time (sec)')
-    ax.set_title(fig_name)
-    fig.savefig(os.path.normpath('D:\\Images\\' + fig_name + '_sdf.png'))	
-
 
 
