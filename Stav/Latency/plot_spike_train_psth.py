@@ -14,5 +14,6 @@ def plot_spike_train_psth(spike_train, fig_path):
         spike_times.extend(list(row))
     plt.hist(spike_times, bins=[x * 0.005 for x in range(-20, 51)])
     ax.axvspan(-0.2,0,color='gray',alpha=0.2);
+    ax.set_xlim([-0.1, 0.25])
 
     fig.savefig(fig_path)
