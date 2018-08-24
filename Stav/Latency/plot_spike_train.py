@@ -10,11 +10,10 @@ import matplotlib.pyplot as plt
 
 def plot_spike_train(spike_trains, fig_path):
     fig,ax = plt.subplots(1,1,figsize=(6,3))
-    print(len(spike_trains))
-    print(spike_trains[0].shape)
     for r_ind, row in enumerate(spike_trains):
         ax.plot(row, r_ind*np.ones_like(row),'|',color='b')
     ax.invert_yaxis()
-    ax.set_xlim([0, 0.25])
+    ax.set_xlim([-0.1, 0.25])
+    ax.axvspan(-0.1,0,color='gray',alpha=0.2);
 
     fig.savefig(fig_path)

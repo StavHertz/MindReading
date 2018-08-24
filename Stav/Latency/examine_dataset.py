@@ -33,4 +33,4 @@ nwb_file = os.path.join(drive_path,multi_probe_filename)
 
 data_set = NWB_adapter(nwb_file)
 
-print_info(data_set.stim_tables['natural_scenes'])
+print_info(data_set.unit_df)
