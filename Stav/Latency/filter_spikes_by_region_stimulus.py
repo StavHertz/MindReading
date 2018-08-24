@@ -13,7 +13,8 @@ sys.path.append(basic_path + 'resources/swdb_2018_neuropixels')
 from swdb_2018_neuropixels.ephys_nwb_adapter import NWB_adapter
 
 def filter_spikes_by_region_stimulus(multi_probe_expt_info, region, stimulus):
-    spike_trains = []
+    empty_cells = 0
+    spike_trains = {}
     for multi_probe_example in range(len(multi_probe_expt_info)):
         multi_probe_filename = multi_probe_expt_info.iloc[multi_probe_example]['nwb_filename']
 
@@ -29,6 +30,14 @@ def filter_spikes_by_region_stimulus(multi_probe_expt_info, region, stimulus):
                 spike_train = all_units[region_unit['unit_id']]
                 for ind, stim_row in data_set.stim_tables['natural_scenes'].iterrows():
                     current_train = spike_train[(spike_train > stim_row['start']) & (spike_train <= stim_row['end'])] - stim_row['start']
-                    spike_trains.append(current_train)
+                    # if current_train.shape[0] > 0:
+                    train_id = multi_probe_filename + '_' + c_probe + '_' + region_unit['unit_id'] + '_' + str(int(stim_row['frame']))
+                    if not spike_trains.has_key(train_id):
+                        spike_trains[train_id] = []
+                    spike_trains[train_id].append(current_train)
+                    # else:
+                    #     empty_cells += 1
+        break
+    print('Number of cells with no response: ' + str(empty_cells))
     return spike_trains
         
