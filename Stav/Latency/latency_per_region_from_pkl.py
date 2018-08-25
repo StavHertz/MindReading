@@ -70,7 +70,7 @@ for region in all_regions:
         region_latency[region].append(c_latency)
         if temp_ind > 50:
             break
-        temp_ind += 1
+        temp_ind += 2
 
     print(region_latency)
 
