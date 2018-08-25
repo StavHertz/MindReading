@@ -1,7 +1,7 @@
 def kernel_fn(x,h):
     return (1./h)*(np.exp(1)**(-(x**2)/h**2))
 
-def get_sdf(spike_train,h=None):
+def get_sdf(spike_train,h=5):
     n=len(spike_train)
     sdf=np.zeros(n);
     out=np.abs(np.mgrid[0:n,0:n][0]-np.matrix.transpose(np.mgrid[0:n,0:n][0]))
