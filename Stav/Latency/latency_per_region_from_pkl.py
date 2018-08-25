@@ -37,6 +37,7 @@ all_regions = get_all_regions(multi_probe_expt_info)
 print('All regions: ' + str(all_regions))
 
 output_path = 'Latency_results/'
+input_path = '../../../Resources/'
 if not os.path.exists(output_path):
     os.makedirs(output_path)
 
@@ -50,7 +51,7 @@ for region in all_regions:
     # with open('region_spikes.pkl', 'w') as f:
     #     pickle.dump([region_spikes], f)
 
-    with open(region + '_spikes.pkl') as f:
+    with open(input_path + 'Small_' + region + '_spikes.pkl') as f:
         region_spikes = pickle.load(f)
 
     region_spikes = region_spikes[0]
@@ -64,7 +65,7 @@ for region in all_regions:
     temp_ind = 0
     for key, val in region_spikes.iteritems():
         file_name = c_output_path + key
-        # plot_spike_train(val, file_name + '.png')
+        plot_spike_train(val, file_name + '.png')
         c_latency = plot_spike_train_psth_with_latency(val, file_name + '_psth.png')
         region_latency[region].append(c_latency)
         if temp_ind > 50:
@@ -73,5 +74,5 @@ for region in all_regions:
 
     print(region_latency)
 
-with open('region_latency.pkl', 'w') as f:
+with open(input_path + 'region_latency.pkl', 'w') as f:
     pickle.dump([region_latency], f)
