@@ -40,19 +40,38 @@ output_path = 'Latency_results/'
 if not os.path.exists(output_path):
     os.makedirs(output_path)
 
+region_latency = {}
+
 for region in all_regions:
-    region_spikes = filter_spikes_by_region_stimulus(multi_probe_expt_info, region, current_stimulus)
+    region_latency[region] = []
+    # region_spikes = filter_spikes_by_region_stimulus(multi_probe_expt_info, region, current_stimulus)
 
-    print('Saving region file to disk: ' + region)
-    with open(region + '_spikes.pkl', 'w') as f:
-        pickle.dump([region_spikes], f)
-    print('File saved')
 
-    # c_output_path = output_path + region + '/'
-    # if not os.path.exists(c_output_path):
-    #     os.makedirs(c_output_path)
+    # with open('region_spikes.pkl', 'w') as f:
+    #     pickle.dump([region_spikes], f)
 
-    # for key, val in region_spikes.iteritems():
-    #     file_name = c_output_path + key
-    #     plot_spike_train(val, file_name + '.png')
-    #     plot_spike_train_psth_with_latency(val, file_name + '_psth.png')
+    with open(region + '_spikes.pkl') as f:
+        region_spikes = pickle.load(f)
+
+    region_spikes = region_spikes[0]
+
+    print('Loaded spikes file from region: ' + region)
+
+    c_output_path = output_path + region + '/'
+    if not os.path.exists(c_output_path):
+        os.makedirs(c_output_path)
+
+    temp_ind = 0
+    for key, val in region_spikes.iteritems():
+        file_name = c_output_path + key
+        # plot_spike_train(val, file_name + '.png')
+        c_latency = plot_spike_train_psth_with_latency(val, file_name + '_psth.png')
+        region_latency[region].append(c_latency)
+        if temp_ind > 50:
+            break
+        temp_ind += 1
+
+    print(region_latency)
+
+with open('region_latency.pkl', 'w') as f:
+    pickle.dump([region_latency], f)
