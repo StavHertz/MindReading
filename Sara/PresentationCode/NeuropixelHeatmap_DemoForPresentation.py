@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
 """
-Heat map generation of neuropixel probe responses
+Demo code for creating neuropixel probe heatmaps.
 
-Created on Fri Aug 24 22:17:38 2018
+Created on Sat Aug 25 09:46:08 2018
 
 @author: sarap
 """
 
 from __future__ import print_function
-import numpy as np
-import pandas as pd
+
 import os
 import sys
+import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+
+from neuropixel_plots import probe_heatmap
 
 # %% Settings
 pre_time = 0.1
@@ -75,20 +78,7 @@ count_matrix = np.zeros([len(xdepth), len(all_counts[0])])
 for i, row in analysis_df.iterrows():
     count_matrix[np.where(xdepth == row['depth'])] = row['counts']
 
-# %% New Heatmap
-fig, ax = plt.subplots(1, 1, figsize=(10,20))
-ax.imshow(count_matrix)
-x_pts = np.shape(count_matrix)[1]
-y_pts = np.shape(count_matrix)[0]
-xfac = ax.get_xticks()/x_pts*350
-xfac = xfac - 100
-ax.set_xticklabels([str(np.round(x)) for x in xfac], fontsize=19)
-yfac = ax.get_yticks()/y_pts*np.max(np.abs(xdepth))
-ax.set_yticklabels([str(-np.round(y)) for y in yfac], fontsize=20)
-ax.set_xlabel('Time (ms)', fontsize=30)
-ax.vlines(np.where(centers == np.min(np.abs(centers))),ax.get_ylim()[1],ax.get_ylim()[0], 'white', alpha=0.6)
-ax.set_ylabel('Depth (microns)', fontsize=30)
-ax.set_title(fig_name, fontsize=30)
-ax.set_title('ProbeE - all natural images', fontsize=30)
+# %% Create the heatmap
+fig, ax = probe_heatmap(count_matrix, xdepth, edges)
 # %% Save the heatmap
-fig.savefig(os.path.normpath('D:\\Images\\AvgOverImages\\' + fig_name + '_heatmap.png'))
+fig.savefig(os.path.normpath(image_path + fig_name + '_heatmap.png'))
