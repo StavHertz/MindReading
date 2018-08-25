@@ -29,7 +29,7 @@ def filter_spikes_by_region_stimulus(multi_probe_expt_info, region, stimulus):
             for index, region_unit in region_units.iterrows():
                 spike_train = all_units[region_unit['unit_id']]
                 for ind, stim_row in data_set.stim_tables['natural_scenes'].iterrows():
-                    current_train = spike_train[(spike_train > stim_row['start'] - pre_stimulus_time) & (spike_train <= stim_row['end'])] - stim_row['start']
+                    current_train = spike_train[(spike_train > stim_row['start'] - pre_stimulus_time) & (spike_train < stim_row['end'])] - stim_row['start']
                     train_id = multi_probe_filename + '_' + c_probe + '_' + region_unit['unit_id'] + '_' + str(int(stim_row['frame'])) + '_' + str(region_unit['depth'])
                     if not spike_trains.has_key(train_id):
                         spike_trains[train_id] = []
