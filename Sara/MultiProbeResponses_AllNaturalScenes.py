@@ -29,19 +29,22 @@ manifest_file = os.path.join(drive_path,'ephys_manifest.csv')
 expt_info_df = pd.read_csv(manifest_file)
 #make new dataframe by selecting only multi-probe experiments
 multi_probe_expt_info = expt_info_df[expt_info_df.experiment_type == 'multi_probe']
-multi_probe_example = 0 # index to row in multi_probe_expt_info
+multi_probe_example = 2 # index to row in multi_probe_expt_info
 multi_probe_filename  = multi_probe_expt_info.iloc[multi_probe_example]['nwb_filename']
 
 nwb_file = os.path.join(drive_path, multi_probe_filename)
 print('Importing data file from {}'.format(nwb_file))
-image_path = os.path.normpath('D:\\Images\\AvgOverImages\\' + multi_probe_filename[:-4])
+image_path = os.path.normpath('D:/ImagesAvgOverImages/' + multi_probe_filename[:-4], '/')
 print('Saving output to {}'.format(image_path))
 
 data_set = NWB_adapter(nwb_file)
+probe_list = data_set.probe_list
+print('Data from probes:')
+print(probe_list)
 
 for probe_name in data_set.probe_list:
     print('Starting analysis for: {}'.format(probe_name))
-    fig_name = '\\Probe{}_AllImages'.format(probe_name[-1])
+    fig_name = '/Probe{}_AllImages'.format(probe_name[-1])
     
     # Get the spikes from one neuropixel probe
     probe_spikes = data_set.spike_times[probe_name]
@@ -124,8 +127,7 @@ for probe_name in data_set.probe_list:
             ax.set_xlim([-100, 250])
             ax.set_xlabel('Time (msec)')
             fig.savefig(os.path.normpath(image_path + '\\Probe{}_{}_PSTH.png'.format(probe_name[-1], region_name)))
-            
-    
+             
     # Heat map
     for i, region_name in enumerate(all_regions):
         fig_name = 'Probe{}_{}'.format(probe_name[-1], region_name)
