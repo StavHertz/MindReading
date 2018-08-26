@@ -39,8 +39,10 @@ print('Saving output to {}'.format(image_path))
 
 data_set = NWB_adapter(nwb_file)
 probe_list = data_set.probe_list
-print('Data from probes:')
-print(probe_list)
+print('Neuropixel probes: ', probe_list)
+
+# Get the stimulus type table
+ns_table = data_set.get_stimulus_table('natural_scenes')
 
 for probe_name in data_set.probe_list:
     print('Starting analysis for: {}'.format(probe_name))
@@ -49,7 +51,6 @@ for probe_name in data_set.probe_list:
     # Get the spikes from one neuropixel probe
     probe_spikes = data_set.spike_times[probe_name]
 
-    ns_table = data_set.get_stimulus_table('natural_scenes')
     all_trains = {}
     # Subset of dataframe corresponding to chosen probe
     probe_df = data_set.unit_df[(data_set.unit_df['probe']==probe_name)]
