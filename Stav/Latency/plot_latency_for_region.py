@@ -3,7 +3,8 @@ import numpy as np
 from scipy.stats import sem
 import matplotlib.pyplot as plt
 
-with open('region_latency.pkl') as f:
+input_path = '../../../Resources/'
+with open(input_path + 'region_latency.pkl') as f:
     region_latency = pickle.load(f)
 region_latency = region_latency[0]
 
@@ -20,6 +21,10 @@ for key, latency_list in region_latency.iteritems():
 fig,ax = plt.subplots(1,1,figsize=(6,3))
 ax.plot(region_means, '.')
 ax.errorbar(range(len(region_means)), region_means, yerr=region_sems)
-ax.set_xticklabels(region_latency.keys())
+ax.set_xticklabels(region_latency.keys(), FontSize=14)
 ax.set_xticks(range(len(region_means)))
+ax.set_xlabel('Region', FontSize=16)
+ax.set_ylabel('Mean response time (ms)', FontSize=16)
+ax.set_title('Response time for natural scenes', FontSize=18)
+
 plt.show()

@@ -42,10 +42,10 @@ def plot_spike_train_psth_with_latency(spike_train, fig_path):
     first_occur = -1
     pos_first_occur = -1
     neg_first_occur = -1
-    
+
     if post_np_arr.max() > positive_threshold:
         pos_first_occur = np.argmax(post_np_arr > positive_threshold)
-    
+
     if post_np_arr.min() < negative_threshold:
         neg_first_occur = np.argmax(post_np_arr < negative_threshold)
 
@@ -63,18 +63,10 @@ def plot_spike_train_psth_with_latency(spike_train, fig_path):
         elif neg_first_occur > -1:
             first_occur = neg_first_occur
             plt.axvline(x=bins[first_occur+stimulus_ind+start_gap], color='red',alpha=0.5)
-    
-# sdfs = np.zeros((len(spike_train), int(end_window_in_ms-start_window_in_ms)))
-# for row_ind, row in enumerate(spike_train):
-#     sdf = get_hist_sdf(row)
-#     sdfs[row_ind, :] = sdf[:350]
-# mean_sdf = sdfs.mean(axis=0)
-# plt.plot(x_axis_values, mean_sdf, color='yellow')
 
-# ax.axvspan(start_window_in_ms/float(1000),0,color='gray',alpha=0.2)
-# ax.set_xlim([start_window_in_ms/float(1000), end_window_in_ms/float(1000)])
-
-# fig.savefig(fig_path)
+    ax.axvspan(start_window_in_ms/float(1000),0,color='gray',alpha=0.2)
+    ax.set_xlim([start_window_in_ms/float(1000), end_window_in_ms/float(1000)])
+    fig.savefig(fig_path)
 
     # print(pos_first_occur)
     # print(neg_first_occur)
@@ -86,7 +78,7 @@ def plot_spike_train_psth_with_latency(spike_train, fig_path):
     # print('--')
 
     response_time = float('nan')
-    if first_occur > -1:
-        response_time = x_axis_values[int((first_occur+stimulus_ind+start_gap)*window_in_ms)]*1000
+# if first_occur > -1:
+#     response_time = x_axis_values[int((first_occur+stimulus_ind+start_gap)*window_in_ms)]*1000
 
     return response_time

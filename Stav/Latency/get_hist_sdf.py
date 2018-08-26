@@ -14,13 +14,11 @@ def spike_times_to_arr(spike_times, start_point, end_point):
 
 def get_hist_sdf(spike_times):
     spike_times_arr = spike_times_to_arr(spike_times, -0.1, 0.25)
-    if False:
-        sdf = get_sdf_from_spike_train(spike_times_arr)
-        print(spike_times_arr.shape)
-        print(sdf.shape)
+    if True:
+        sdf = get_sdf_from_spike_train(spike_times_arr, 10)
 
-        print(spike_times_arr)
-        print(sdf)
+        # print(spike_times_arr)
+        # print(sdf)
 
         return sdf
     # sigma = 0.045
