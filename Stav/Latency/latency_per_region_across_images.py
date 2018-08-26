@@ -18,12 +18,12 @@ from filter_spikes_by_region_stimulus import filter_spikes_by_region_stimulus
 from plot_spike_train import plot_spike_train
 from plot_spike_train_psth import plot_spike_train_psth
 from plot_spike_train_psth_with_latency import plot_spike_train_psth_with_latency
-from plot_spike_train_sdf_with_latency import plot_spike_train_sdf_with_latency
 from get_all_regions import get_all_regions
 from print_info import print_info
 import pickle
 import datetime
-
+from filter_spikes_by_region_stimulus_across_images import filter_spikes_by_region_stimulus_across_images
+from plot_spike_train_sdf_with_latency import plot_spike_train_sdf_with_latency
 current_stimulus = ['natural_images']
 
 # Provide path to manifest file
@@ -47,18 +47,13 @@ region_latency = {}
 
 for region in all_regions:
     region_latency[region] = []
-    # region_spikes = filter_spikes_by_region_stimulus(multi_probe_expt_info, region, current_stimulus)
+    region_spikes = filter_spikes_by_region_stimulus_across_images(multi_probe_expt_info, region,
+        current_stimulus, short_run=True)
 
-
-    # with open('region_spikes.pkl', 'w') as f:
-    #     pickle.dump([region_spikes], f)
-
-    with open(input_path + 'Small_' + region + '_spikes.pkl') as f:
-        region_spikes = pickle.load(f)
-
-    region_spikes = region_spikes[0]
-
-    print('Loaded spikes file from region: ' + region)
+    print('Saving region file to disk: ' + region)
+    with open(input_path + 'Small_' + region + '_spikes_aIm.pkl', 'w') as f:
+        pickle.dump([region_spikes], f)
+    print('File saved')
 
     c_output_path = output_path + region + '_' + str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")) + '/'
     if not os.path.exists(c_output_path):
@@ -76,5 +71,5 @@ for region in all_regions:
 
     print(region_latency)
 
-with open(input_path + 'region_latency.pkl', 'w') as f:
+with open(input_path + 'region_latency_aIm.pkl', 'w') as f:
     pickle.dump([region_latency], f)
