@@ -25,6 +25,7 @@ bins = [x*bin_width for x in range(-20,51)]
 
 # %% Run once to load in the data
 drive_path = os.path.normpath('d:/visual_coding_neuropixels')
+
 sys.path.append(os.path.normpath('d:/resources/swdb_2018_neuropixels/'))
 from swdb_2018_neuropixels.ephys_nwb_adapter import NWB_adapter
 manifest_file = os.path.join(drive_path,'ephys_manifest.csv')

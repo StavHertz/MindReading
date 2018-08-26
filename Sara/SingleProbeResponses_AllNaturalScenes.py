@@ -73,11 +73,13 @@ ax.set_xlim([-0.1, 0.25])
 ax.set_xlabel('Time (sec)')
 fig.savefig(os.path.normpath('D:\\Images\\AvgOverImages\\' + fig_name + '_psth.png'))	
 
-        
+centers = edges[1:]-(edges[1]-edges[0])/2
 # Heat map
 fig,ax = plt.subplots(1,1,figsize=(15,20))
-plt.imshow(np.vstack(all_counts))
+im_obj = plt.imshow(np.vstack(all_counts), aspect='equal',extent=(-0.1, .250, np.min(unit_row['depth']), np.max(unit_row['depth'])))
 ax.set_title(fig_name)
+ax.autoscale_view()
+
 fig.savefig(os.path.normpath('D:\\Images\\AvgOverImages\\' + fig_name + '_heatmap.png'))
 
 # Split by brain region
