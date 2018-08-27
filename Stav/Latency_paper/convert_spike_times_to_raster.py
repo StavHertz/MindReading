@@ -3,7 +3,8 @@ from get_prestimulus_time import get_prestimulus_time
 from get_window_size import get_window_size
 
 def convert_time_to_ind(spike_time):
-    return int(spike_time*1000 + get_prestimulus_time())
+    ind = int(spike_time*1000 + get_prestimulus_time())
+    return ind
 
 def get_spike_train_from_time(spike_times_list):
     spike_train = np.zeros(get_window_size())
