@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_context('notebook', font_scale=1.4)
 
-__all__ = ['probe_heatmap', 'image_raster', 'image_psth', 'get_psth', 
-           'get_avg_psth', 'plot_psth']
+__all__ = ['probe_heatmap', 'image_raster', 'image_psth', 'plot_psth',
+           'receptive_field_map']
 
 def probe_heatmap(psth_matrix, depth, edges, pre_time):
 	"""
@@ -100,76 +100,6 @@ def image_raster(img, unit_spikes, ax):
     return ax
 
 
-def get_psth(stim_df, unit_spikes, pre_time=.1, tail_time=0, bin_width=0.005):
-    """
-    Parameters
-    ----------
-    stim_df : pandas.DataFrame
-        Stimulus table, will be averaged together
-    unit_spikes : list
-        Spike times for one unit
-    pre_time : optional, default = .1 (seconds)
-        Time before stimulus to include in PSTH
-    tail_time : optional, default = 0
-        Time after stimulus presentation to include in PSTH
-    bin_width : optional, 0.005 milliseconds
-        Bin size
-    
-    Returns
-    -------
-    mean_fr : average PSTH (spikes/sec)
-    centers : centers of PSTH time bins
-    """
-
-    all_trials = []
-    for i, start in enumerate(stim_df.start):
-        trial_spikes = unit_spikes[(unit_spikes > start-pre_time) & (unit_spikes < stim_df['end'].values[i]+tail_time)]       
-        trial_spikes = trial_spikes - start
-        all_trials.append(list(trial_spikes))
-    
-    #for i, stim_row in stim_df.iterrows():
-    #    trial_spikes = unit_spikes[(unit_spikes > stim_row['start']-pre_time) & (unit_spikes < stim_row['end']+tail_time)]
-    
-    # Make PSTH for each trial
-    total_time = (stim_df['end'].values[0] - stim_df['start'].values[0]) + tail_time
-    bins = np.arange(-pre_time,total_time+bin_width,bin_width)
-    fr_per_trial = []
-    for trial_spikes in all_trials:
-        counts, edges = np.histogram(trial_spikes, bins)
-        counts = counts/bin_width
-        fr_per_trial.append(counts)
-    centers = edges[:-1] + np.diff(edges)/2
-    
-    return fr_per_trial, centers
-
-
-def get_avg_psth(stim_df, unit_spikes, pre_time=.1, tail_time=0, showme=False):
-    """
-    Parameters
-    ----------
-    stim_df : pandas.DataFrame
-        Stimulus table, will be averaged together
-    unit_spikes : list
-        Spike times for one unit
-    pre_time : optional, default = .1 (seconds)
-        Time before stimulus to include in PSTH
-    tail_time : optional, default = 0
-        Time after stimulus presentation to include in PSTH
-    showme : optional, False
-        Plot the output
-    
-    Returns
-    -------
-    mean_fr : average PSTH (spikes/sec)
-    centers : centers of PSTH time bins
-    """
-    fr_per_trial, centers = get_psth(stim_df, unit_spikes, pre_time, tail_time)
-    mean_fr = np.mean(fr_per_trial, axis=0)
-    if showme:
-        plot_psth(mean_fr, centers)
-    return mean_fr, centers
-
-
 def plot_psth(psth, centers, ax=[]):
     if not ax:
         fig, ax = plt.subplots(1,1,figsize=(6,3))
@@ -182,6 +112,22 @@ def plot_psth(psth, centers, ax=[]):
     ax.set_xlabel('Time (s)', fontsize=16)
     ax.set_xlim([np.min(centers), np.max(centers)])
     plt.show()
+    
+    return fig, ax
+
+
+def receptive_field_map(rf_map, cmap=[]):
+    if not cmap:
+        cmap = sns.cubehelix_palette(8, as_cmap=True)
+        
+    if rf_map.ndim == 2:
+        fig, ax = plt.subplots(1, 1, figsize=(4, 4))
+        sns.heatmap(rf_map, ax=ax, cmap=cmap, square=True, cbar=False, xticklabels=False, yticklabels=False)    
+    elif rf_map.ndim == 3:
+        fig, ax = plt.subplots(1, 3, figsize=(4, 12))
+        ax = ax.flatten()
+        for i in range(rf_map.shape[0]):
+            sns.heatmap(rf_map[i,:,:], ax=ax[i], square=True, cbar=False, xticklabels=False, yticklabels=False, cmap=cmap)
     
     return fig, ax
         
@@ -235,3 +181,35 @@ def image_psth(img, unit_spikes, ax=[]):
     plt.show()   
 
     return fig, ax
+
+
+def region_cmap(region_name, rot=0.1, plotme=False):
+    """
+    Parameters
+    ----------
+    region_name : str
+        Region abbreviation (VISp, TH, SCs, DG, etc)
+    rot : float
+    plotme : optional, bool
+        plot colormap, default = false
+    
+    Returns
+    -------
+    cmap : seaborn colormap
+    """
+    
+    starts = np.linspace(0.2, 2.8, 9)
+    regions = ('VISam', 'VISpm', 'TH', 'SCs', 'DG', 'VISp', 'VISl', 'VISal', 'VISrl')
+    try:
+        ind = regions.index(region_name)
+        ind = starts[ind]
+    except ValueError:
+        print('Invalid Region. Accepted regions: ')
+        print(regions)
+        return
+        
+    cmap = sns.cubehelix_palette(start=ind, rot=rot, as_cmap=True)
+    
+    if plotme:
+        sns.palplot(sns.cubehelix_palette(start=ind, rot=rot))
+    return cmap
