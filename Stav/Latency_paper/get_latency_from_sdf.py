@@ -1,14 +1,16 @@
 import numpy as np
 from get_prestimulus_time import get_prestimulus_time
 from get_time_window_buffer import get_time_window_buffer
+from get_baseline_window_size import get_baseline_window_size
 
 def get_latency_from_sdf(sdf, number_of_std=2):
+    baseline_window_size = get_baseline_window_size()
     pre_stimulus_time = get_prestimulus_time() - get_time_window_buffer()
-    pre_stimulus_sdf = sdf[:pre_stimulus_time]
+    baseline_stimulus_sdf = sdf[pre_stimulus_time-baseline_window_size:pre_stimulus_time+baseline_window_size]
     post_stimulus_sdf = sdf[pre_stimulus_time:]
 
-    pre_std_val = np.std(pre_stimulus_sdf)
-    pre_mean_val = np.mean(pre_stimulus_sdf)
+    pre_std_val = np.std(baseline_stimulus_sdf)
+    pre_mean_val = np.mean(baseline_stimulus_sdf)
     positive_threshold = pre_mean_val + number_of_std*pre_std_val
     negative_threshold = pre_mean_val + -1*number_of_std*pre_std_val
 
