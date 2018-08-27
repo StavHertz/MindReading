@@ -15,18 +15,25 @@ for exp_file in all_exp_files:
     full_latency_dataframe.append(latency_dataframe)
 full_latency_dataframe = pd.concat(full_latency_dataframe, ignore_index=True)
 
+print(full_latency_dataframe[full_latency_dataframe.unit_id == 'noise'].unit_id)
+
 latencies_across_region = []
+mean_per_region = []
 all_regions = np.unique(full_latency_dataframe['region'])
 for region in all_regions:
     region_units = full_latency_dataframe[full_latency_dataframe['region'] == region]
     all_latencies = region_units['latency_sdf'].values.astype(float)
     all_latencies = all_latencies[~np.isnan(all_latencies)]
-    print(all_latencies)
+    # print(all_latencies)
     latencies_across_region.append(all_latencies)
+    mean_per_region.append(all_latencies.mean())
 
 fig, ax = plt.subplots(1,1,figsize=(6,3))
 ax.violinplot(latencies_across_region)
 ax.set_ylim([0, 300])
-ax.set_xticks(range(1, len(all_regions)+1))
+x_axis_vals = range(1, len(all_regions)+1)
+ax.set_xticks(x_axis_vals)
 ax.set_xticklabels(all_regions)
+ax.scatter(x_axis_vals, mean_per_region, marker='_')
+fig.savefig('latency_analysis_v11.png')
 plt.show()
