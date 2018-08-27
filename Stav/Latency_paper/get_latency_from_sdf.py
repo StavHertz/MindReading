@@ -42,4 +42,9 @@ def get_latency_from_sdf(sdf, number_of_std=2):
     if first_occur > -1:
         response_time = int(first_occur)
 
-    return response_time, response_type
+    pre_stim_dict = {}
+    pre_stim_dict['mean'] = pre_mean_val
+    pre_stim_dict['std'] = pre_std_val
+    pre_stim_dict['std_num'] = number_of_std
+
+    return response_time, response_type, pre_stim_dict

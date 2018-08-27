@@ -2,7 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from get_color_list import get_color_list
 
-def plot_raster_sdf(unit_key, spike_times, probe_spikes_images, mean_sdf, sdf_latency, response_type, fig_path):
+def plot_raster_sdf(unit_key, spike_times, probe_spikes_images, mean_sdf, st_vals, pre_stim_dict, fig_path):
+    pre_mean_val = pre_stim_dict['mean']
+    pre_std_val = pre_stim_dict['std']
+    pre_std_num = pre_stim_dict['std_num']
+    sdf_latency = st_vals['latency_sdf']
+    response_type = st_vals['response_type']
+    sdf_latency_v2 = st_vals['latency_sdf_v2']
+    response_type_v2 = st_vals['response_type_v2']
     fig,ax = plt.subplots(1,1,figsize=(12,6))
     color_list = get_color_list()
 
@@ -35,9 +42,19 @@ def plot_raster_sdf(unit_key, spike_times, probe_spikes_images, mean_sdf, sdf_la
     
     if not np.isnan(sdf_latency):
         if response_type > 0:
-            ax.axvline(x=float(sdf_latency)/ms_f, color='blue',alpha=0.9)
+            ax.axvline(x=float(sdf_latency)/ms_f, color='blue', alpha=0.9, linestyle='dashed')
         else:
-            ax.axvline(x=float(sdf_latency)/ms_f, color='orange',alpha=0.9)
+            ax.axvline(x=float(sdf_latency)/ms_f, color='orange', alpha=0.9, linestyle='dashed')
+
+    if not np.isnan(sdf_latency_v2):
+        if response_type_v2 > 0:
+            ax.axvline(x=float(sdf_latency_v2)/ms_f, color='blue',alpha=0.9)
+        else:
+            ax.axvline(x=float(sdf_latency_v2)/ms_f, color='orange',alpha=0.9)
+
+    ax.axhline(y=pre_mean_val, color='gray', alpha=0.5)
+    ax.axhline(y=pre_mean_val+pre_std_num*pre_std_val, color='gray', alpha=0.5, linestyle='dashed')
+    ax.axhline(y=pre_mean_val-pre_std_num*pre_std_val, color='gray', alpha=0.5, linestyle='dashed')
 
     ax.axvline(x=0, color='red', alpha=0.9)
     # ax.axvspan(start_window_in_ms/ms_f,0,color='gray',alpha=0.8)
