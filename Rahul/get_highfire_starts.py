@@ -6,6 +6,7 @@ def get_highfire_starts(sdf,pre_stim_time,min_start_time):
             Minimum latency (in seconds) after stimulus onset
     Output : Index in sdf array where high-firing after stimulus starts
     '''
+    import numpy as np
     from scipy.signal import argrelextrema
     from scipy.stats import iqr
     sdf_stim=sdf[(int(1000*(pre_stim_time))+min_start_time):]
@@ -43,3 +44,13 @@ def get_highfire_starts(sdf,pre_stim_time,min_start_time):
     out_idx=out_idx+(idx_temp/2);
     out_idx=out_idx+min_start_time;
     return out_idx
+
+def get_latency(sdf,pre_stim_time,min_start_time):
+    import numpy as np
+    l1=get_highfire_starts(sdf,pre_stim_time,min_start_time)
+    l2=get_highfire_starts(-sdf,pre_stim_time,min_start_time)
+
+    if (l1==min_start_time and l2 > min_start_time) or (l2==min_start_time and l1 > min_start_time):
+        latency = np.max(l1,l2)
+    else:
+        latency = np.min(l1,l2)
