@@ -56,9 +56,7 @@ def get_experiment_latency_dataframe(data_set, multi_probe_filename, short_versi
         # hist_latency = get_latency_from_hist(st_hist)
         mean_sdf, spike_raster = get_mean_sdf_from_spike_train(probe_spikes[spike_train_name])
         sdf_latency, response_type, pre_stim_dict = get_latency_from_sdf(mean_sdf)
-        print('Statrted new SDF')
         sdf_latency2, response_type2 = get_latency_from_sdf_v2(mean_sdf)
-        print('Ended new SDF')
         st_vals['latency_psth'] = 0
         st_vals['latency_sdf'] = sdf_latency
         st_vals['latency_sdf_v2'] = sdf_latency2

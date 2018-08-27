@@ -3,7 +3,7 @@ from get_prestimulus_time import get_prestimulus_time
 from get_time_window_buffer import get_time_window_buffer
 from get_baseline_window_size import get_baseline_window_size
 
-def get_latency_from_sdf(sdf, number_of_std=2):
+def get_latency_from_sdf(sdf, number_of_std=4):
     baseline_window_size = get_baseline_window_size()
     pre_stimulus_time = get_prestimulus_time() - get_time_window_buffer()
     baseline_stimulus_sdf = sdf[pre_stimulus_time-baseline_window_size:pre_stimulus_time+baseline_window_size]

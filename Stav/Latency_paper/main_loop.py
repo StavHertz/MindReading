@@ -28,6 +28,8 @@ else:
 	run_short_version = True
 
 for multi_probe_id in range(len(multi_probe_experiments)):
+	print('Analyzing experiment number: ' + str(multi_probe_id))
 	data_set, multi_probe_filename = load_exp_file(multi_probe_experiments, multi_probe_id, drive_path)
 	latency_dataframe = get_experiment_latency_dataframe(data_set, multi_probe_filename, short_version=run_short_version)
 	save_exp_dataframe(latency_dataframe, multi_probe_filename, resource_path)
+	print('Done')
