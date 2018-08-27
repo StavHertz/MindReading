@@ -51,7 +51,7 @@ def get_latency(sdf,pre_stim_time,min_start_time):
     l2=get_highfire_starts(-sdf,pre_stim_time,min_start_time)
 
     if (l1==min_start_time and l2 > min_start_time) or (l2==min_start_time and l1 > min_start_time):
-        latency = np.max(l1,l2)
+        latency = np.max([l1,l2])
     else:
-        latency = np.min(l1,l2)
+        latency = np.min([l1,l2])
     return latency
