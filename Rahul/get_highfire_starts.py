@@ -1,10 +1,12 @@
 def get_highfire_starts(sdf,pre_stim_time,min_start_time):
     '''
-    This function accepts an array with spike density function values over each milisecond,
-    and the time (in seconds) until stimulus onset.
-    It estimates and returns the first time (in miliseconds) the neuron started high-firing.
+    This function estimates and returns the first time (in miliseconds) the neuron starts high-firing.
+    Input : An array with spike density function values over each milisecond,
+            Time (in seconds) until stimulus onset,
+            Minimum latency after stimulus onset
+    Output : Index in sdf array where high-firing after stimulus starts
     '''
-#    from scipy import signal
+    from scipy.signal import argrelextrema
     from scipy.stats import iqr
     sdf_stim=sdf[(int(1000*(pre_stim_time))+5):]
     sdf_max_idx=np.argmax(sdf_stim)
@@ -13,7 +15,10 @@ def get_highfire_starts(sdf,pre_stim_time,min_start_time):
         return min_start_time;
     
     thresh0=np.percentile(sdf_stim[sdf_max_idx_all],75)+1.5*iqr(sdf_stim[sdf_max_idx_all]);
-    if np.all(df_stim[sdf_max_idx]<thresh0):
+    if np.all(sdf_stim[sdf_max_idx]<thresh0):
+        sdf_min_idx=np.argmin(sdf_stim)
+        sdf_min_idx_all=argrelextrema(sdf_stim,np.greater)[0]
+        
         return min_start_time;
     
     sdf_max_idx=np.min(sdf_max_idx_all[sdf_stim[sdf_max_idx_all]>=thresh0])
