@@ -54,3 +54,4 @@ def get_latency(sdf,pre_stim_time,min_start_time):
         latency = np.max(l1,l2)
     else:
         latency = np.min(l1,l2)
+    return latency
