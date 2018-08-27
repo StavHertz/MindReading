@@ -1,4 +1,4 @@
-def get_highfire_starts(sdf,pre_stim_time,min_start_time):
+def get_highfire_starts(sdf,pre_stim_time,min_start_time):#final
     '''
     This function estimates and returns the first time (in miliseconds) the neuron starts high-firing.
     Input : An array with spike density function values over each milisecond,
@@ -12,12 +12,14 @@ def get_highfire_starts(sdf,pre_stim_time,min_start_time):
     sdf_stim=sdf[(int(1000*(pre_stim_time))+min_start_time):]
     sdf_max_idx=np.argmax(sdf_stim)
     baseline = sdf[(int(1000*(pre_stim_time))-20):(int(1000*(pre_stim_time))+20)]
+    #thresh00=np.mean(baseline)*np.exp(2*np.std(np.log(np.abs(baseline))))
     thresh00=np.mean(baseline) + 2*np.std(baseline)
     sdf_max_idx_all=argrelextrema(sdf_stim, np.greater_equal,order=2)[0]
     sdf_min_idx_all=argrelextrema(sdf_stim, np.less_equal,order=2)[0]
     sdf_min_max_idx_all=np.concatenate((sdf_max_idx_all,sdf_min_idx_all))
     std_thresh_1=np.std(sdf_stim[sdf_max_idx_all])
     std_thresh_2=np.std(sdf_stim[sdf_min_idx_all])
+    std_thresh=(std_thresh_1+std_thresh_2)/2;
     thresh01=np.median(sdf_stim[sdf_max_idx_all])+2*std_thresh;
     #thresh01=thresh00;
     thresh0 = (thresh00+thresh01)/2
@@ -53,15 +55,6 @@ def get_highfire_starts(sdf,pre_stim_time,min_start_time):
     return out_idx
 
 def get_latency(sdf,pre_stim_time,min_start_time):
-    '''
-    This function estimates and returns the latency of activity (in miliseconds) after stimulus onset
-    based on the spike density function.
-    Input : An array with spike density function values over each milisecond,
-            Time (in seconds) until stimulus onset,
-            Minimum latency (in seconds) after stimulus onset
-    Output : Latency (in miliseconds)
-    '''
-    
     import numpy as np
     l1=get_highfire_starts(sdf,pre_stim_time,min_start_time)
     l2=get_highfire_starts(-sdf,pre_stim_time,min_start_time)
