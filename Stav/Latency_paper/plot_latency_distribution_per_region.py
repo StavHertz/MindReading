@@ -21,11 +21,12 @@ for region in all_regions:
     region_units = full_latency_dataframe[full_latency_dataframe['region'] == region]
     all_latencies = region_units['latency_sdf'].values.astype(float)
     all_latencies = all_latencies[~np.isnan(all_latencies)]
+    print(all_latencies)
     latencies_across_region.append(all_latencies)
 
 fig, ax = plt.subplots(1,1,figsize=(6,3))
 ax.violinplot(latencies_across_region)
-ax.set_ylim([0, 250])
+ax.set_ylim([0, 300])
 ax.set_xticks(range(1, len(all_regions)+1))
 ax.set_xticklabels(all_regions)
 plt.show()
