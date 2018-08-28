@@ -46,7 +46,7 @@ def get_experiment_latency_dataframe(data_set, multi_probe_filename, short_versi
                         probe_spikes_images[train_id] = []
                         probe_spikes_times[train_id] = []
                     probe_spikes[train_id].append(stimulus_train)
-                    probe_spikes_images[train_id].append(int(stim_row['frame']))
+                    probe_spikes_images[train_id].append(int(stim_row[get_frames_name(stim_type)]))
                     probe_spikes_times[train_id].append(stim_row['start'])
         if short_version:
             break

@@ -3,8 +3,8 @@ import pandas as pd
 from get_full_latency_dataframe import get_full_latency_dataframe
 from get_all_cortical_regions import get_all_cortical_regions
 
-def get_depth_thresh_dict():
-	full_latency_dataframe = get_full_latency_dataframe()
+def get_depth_thresh_dict(stim_type):
+	full_latency_dataframe = get_full_latency_dataframe(stim_type)
 	all_regions = np.unique(full_latency_dataframe['region'])
 	all_cortical_regions = get_all_cortical_regions()
 	all_exps = np.unique(full_latency_dataframe['experiment'])
