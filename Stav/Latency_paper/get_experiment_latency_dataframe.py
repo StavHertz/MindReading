@@ -5,7 +5,7 @@ import os
 import datetime
 from get_spike_train_values_from_key import get_spike_train_values_from_key
 from get_mean_sdf_from_spike_train import get_mean_sdf_from_spike_train
-from get_latency_from_sdf import get_latency_from_sdf
+from get_latency_from_sdf_v11 import get_latency_from_sdf_v11
 from get_latency_dataframe import get_latency_dataframe
 from get_time_window_buffer import get_time_window_buffer
 from get_prestimulus_time import get_prestimulus_time
@@ -55,8 +55,10 @@ def get_experiment_latency_dataframe(data_set, multi_probe_filename, short_versi
         # st_hist = get_hist_from_spike_train(st_vals)
         # hist_latency = get_latency_from_hist(st_hist)
         mean_sdf, spike_raster = get_mean_sdf_from_spike_train(probe_spikes[spike_train_name])
-        sdf_latency, response_type, pre_stim_dict = get_latency_from_sdf(mean_sdf)
-        sdf_latency2, response_type2 = get_latency_from_sdf_v2(mean_sdf)
+        sdf_latency, response_type, pre_stim_dict = get_latency_from_sdf_v11(mean_sdf)
+        # sdf_latency2, response_type2 = get_latency_from_sdf_v2(mean_sdf)
+        sdf_latency2 = 0
+        response_type2 = 0
         st_vals['latency_psth'] = 0
         st_vals['latency_sdf'] = sdf_latency
         st_vals['latency_sdf_v2'] = sdf_latency2

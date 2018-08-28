@@ -117,6 +117,18 @@ def plot_psth(psth, centers, ax=[]):
 
 
 def receptive_field_map(rf_map, cmap=[]):
+    """
+    Parameters
+    ----------
+    rf_map : np.array (x,y) or (t,x,y)
+        Receptive field(s) 
+    cmap : optional
+        Colormap for figure
+    
+    Returns
+    -------
+    fig, ax : matplotlib handles
+    """
     if not cmap:
         cmap = sns.cubehelix_palette(8, as_cmap=True)
         
@@ -124,7 +136,7 @@ def receptive_field_map(rf_map, cmap=[]):
         fig, ax = plt.subplots(1, 1, figsize=(4, 4))
         sns.heatmap(rf_map, ax=ax, cmap=cmap, square=True, cbar=False, xticklabels=False, yticklabels=False)    
     elif rf_map.ndim == 3:
-        fig, ax = plt.subplots(1, 3, figsize=(4, 12))
+        fig, ax = plt.subplots(1, 3, figsize=(12, 4))
         ax = ax.flatten()
         for i in range(rf_map.shape[0]):
             sns.heatmap(rf_map[i,:,:], ax=ax[i], square=True, cbar=False, xticklabels=False, yticklabels=False, cmap=cmap)
@@ -198,13 +210,13 @@ def region_cmap(region_name, rot=0.1, plotme=False):
     cmap : seaborn colormap
     """
     
-    starts = np.linspace(0.2, 2.8, 9)
-    regions = ('VISam', 'VISpm', 'TH', 'SCs', 'DG', 'VISp', 'VISl', 'VISal', 'VISrl')
+    starts = np.linspace(0.2, 2.8, 10)
+    regions = ('VISam', 'VISpm', 'TH', 'SCs', 'DG', 'CA', 'VISp', 'VISl', 'VISal', 'VISrl')
     try:
         ind = regions.index(region_name)
         ind = starts[ind]
     except ValueError:
-        print('Invalid Region. Accepted regions: ')
+        print('Invalid Region {}. Accepted regions: '.format(region_name))
         print(regions)
         return
         
