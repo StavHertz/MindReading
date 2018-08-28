@@ -11,12 +11,22 @@ import mpl_toolkits.mplot3d.axes3d as p3
 import matplotlib.animation as animation
 from scipy.stats import gaussian_kde
 
-def update_dots(num, data_dots, dots, max_val):
-    for dot, data in zip(dots, data_dots):
-        dot.set_sizes([data[num]*30000]*3)
-        c_val = float(data[num])/max_val
-        # print(c_val) #[c_val, c_val, c_val]
-        # dot.set_color('green')
+def update_dots(num, data, sizes, dots, max_val):
+    ax.clear()
+    ax.set_xlim3d([0.0, 1.0])
+    ax.set_xlabel('X')
+
+    ax.set_ylim3d([0.0, 1.0])
+    ax.set_ylabel('Y')
+
+    ax.set_zlim3d([0.0, 1.0])
+    ax.set_zlabel('Z')
+
+    ax.set_title('Latency in regions')
+    for d_id in range(len(data)):
+        size = sizes[d_id]
+        c_val = float(size[num])/max_val
+        ax.scatter(data[d_id][0], data[d_id][1], data[d_id][2], s=[size[num]*30000]*3, c=[1-c_val, 0, 0])
     return dots
 
 # Attaching 3D axis to the figure
@@ -49,8 +59,6 @@ ax.set_zlabel('Z')
 
 ax.set_title('Latency in regions')
 
-basic_size = 10
-
 import pickle
 with open('latencies_across_region.pkl') as f:
     latencies_across_regions = pickle.load(f)
@@ -67,7 +75,7 @@ for lat_arr in latencies_across_regions:
     if d_vals.max() > max_val:
         max_val = d_vals.max()
 # Creating the Animation object
-line_ani = animation.FuncAnimation(fig, update_dots, 249, fargs=(sizes, dots, max_val),
+line_ani = animation.FuncAnimation(fig, update_dots, 249, fargs=(data, sizes, dots, max_val),
                                    interval=50, blit=False)
 
 plt.show()

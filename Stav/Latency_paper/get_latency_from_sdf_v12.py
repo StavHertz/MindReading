@@ -6,13 +6,14 @@ from get_baseline_window_size import get_baseline_window_size
 def get_latency_from_sdf_v12(all_sdfs, number_of_std=3, min_response_window=10):
     baseline_window_size = get_baseline_window_size()
     pre_stimulus_time = get_prestimulus_time() - get_time_window_buffer()
-    post_stimulus_sdf = mean_SDF[pre_stimulus_time:] #the rest of the sdf after stim onset
 
     mean_SDF = all_sdfs.mean(axis=0)
     std_SDF = all_sdfs.std(axis=0)
     SEM_SDF = std_SDF/np.sqrt(len(all_sdfs))
     CI95_SDF = SEM_SDF*1.96
     CI99_SDF = SEM_SDF*2.58
+    
+    post_stimulus_sdf = mean_SDF[pre_stimulus_time:] #the rest of the sdf after stim onset
 
     #Compute latency
     multiplier = number_of_std #Multiplier of standard errors for threshold detection
@@ -52,8 +53,8 @@ def get_latency_from_sdf_v12(all_sdfs, number_of_std=3, min_response_window=10):
         response_time = first_occur
 
     pre_stim_dict = {}
-    pre_stim_dict['mean'] = pre_mean_val
-    pre_stim_dict['std'] = pre_std_val
+    pre_stim_dict['mean'] = baseline_mean
+    pre_stim_dict['std'] = CI95_SDF
     pre_stim_dict['std_num'] = number_of_std
     pre_stim_dict['min_response_window'] = min_response_window
 
