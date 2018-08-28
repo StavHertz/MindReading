@@ -7,6 +7,7 @@ Created on Sun Aug 26 16:12:53 2018
 @author: sarap
 """
 import os
+import pickle
 import pandas as pd
 from swdb_2018_neuropixels.ephys_nwb_adapter import NWB_adapter
 
@@ -52,3 +53,30 @@ def open_experiment(drive_path, expt_num=0, multi_probe=True):
         print(probe, probe_df['structure'].unique())
     
     return data_set
+
+
+def open_gabor_analysis(exp_num, probe_name):
+    """
+    Load a Gabor RF mapping analysis file
+    
+    Parameters
+    ----------
+    exp_num : char
+        Experiment number
+    probe_name : char
+        Which probe (A-F)
+    
+    Returns
+    -------
+    gabor_analysis : pandas.DataFrame
+    """
+    if int(exp_num) in [84, 10, 21, 58]:
+        fname = '{}multi_probe{}.pkl'.format(str(exp_num), probe_name[-1])
+    else:
+        fname = '{}single_probe{}.pkl'.format(str(exp_num) probe_name[-1])
+    
+    if os.path.isfile(os.path.normpath(rf_path + '//' + fname)):
+        gabor_analysis = pickle.load(open(fname))
+    else:
+        gabor_analysis = []
+    return gabor_analysis
