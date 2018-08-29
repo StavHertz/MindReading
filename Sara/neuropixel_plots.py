@@ -6,14 +6,16 @@ Created on Sat Aug 25 09:08:57 2018
 
 @author: sarap
 """
-
+import os 
+import sys 
 import numpy as np
 import matplotlib.pyplot as plt 
 import seaborn as sns
 sns.set_context('notebook', font_scale=1.4)
 
 __all__ = ['probe_heatmap', 'image_raster', 'image_psth', 'plot_psth',
-           'receptive_field_map']
+           'receptive_field_map', 'region_color', 'rgb2hex']
+
 
 def probe_heatmap(psth_matrix, depth, edges, pre_time):
 	"""
@@ -101,6 +103,17 @@ def image_raster(img, unit_spikes, ax):
 
 
 def plot_psth(psth, centers, ax=[]):
+    """
+    Plot a PSTH
+    
+    Parameters
+    ----------
+    psth : array_like
+        Post-stimulus time histogram
+    centers : array_like
+        Bin centers
+    ax : optional, matplotlib axis handle
+    """
     if not ax:
         fig, ax = plt.subplots(1,1,figsize=(6,3))
     
@@ -118,6 +131,8 @@ def plot_psth(psth, centers, ax=[]):
 
 def receptive_field_map(rf_map, cmap=[]):
     """
+    Map a single xy receptive field or a series of receptive fields
+    
     Parameters
     ----------
     rf_map : np.array (x,y) or (t,x,y)
@@ -135,8 +150,8 @@ def receptive_field_map(rf_map, cmap=[]):
     if rf_map.ndim == 2:
         fig, ax = plt.subplots(1, 1, figsize=(4, 4))
         sns.heatmap(rf_map, ax=ax, cmap=cmap, square=True, cbar=False, xticklabels=False, yticklabels=False)    
-    elif rf_map.ndim == 3:
-        fig, ax = plt.subplots(1, 3, figsize=(12, 4))
+    elif rf_map.ndim > 2:
+        fig, ax = plt.subplots(1, rf_map.shape[0], figsize=(12, 4))
         ax = ax.flatten()
         for i in range(rf_map.shape[0]):
             sns.heatmap(rf_map[i,:,:], ax=ax[i], square=True, cbar=False, xticklabels=False, yticklabels=False, cmap=cmap)
@@ -195,6 +210,15 @@ def image_psth(img, unit_spikes, ax=[]):
     return fig, ax
 
 
+def depth_latency_map(depth_df, save_path):
+    g = sns.jointplot(depth_df['latency'], depth_df['depth']*1e-3, kind='kde', space=0, stat_func=None, color=region_color(region))
+    g.plot_marginals(sns.rugplot, height=0.12, color="k")
+    g.set_axis_labels(xlabel='{} latency (ms)'.format(region), ylabel='{} depth (mm) '.format(region))
+    if save_path is not None:
+        g.savefig(save_path)
+    return g
+
+
 def region_cmap(region_name, rot=0.1, plotme=False):
     """
     Parameters
@@ -225,3 +249,39 @@ def region_cmap(region_name, rot=0.1, plotme=False):
     if plotme:
         sns.palplot(sns.cubehelix_palette(start=ind, rot=rot))
     return cmap
+
+
+def region_color(region_name):
+    """
+    Parameters
+    ----------
+    region_name : str
+        Structure recorded from
+    
+    Returns
+    -------
+    Hex color value for plotting
+    """
+    cmap = region_cmap(region_name)
+    return rgb2hex(cmap.colors[-1])
+
+
+def rgb2hex(rgb):
+    """
+    Convert an RGB value to hex
+    
+    Parameters
+    ----------
+    rgb : array_like
+        Red, green, blue 
+    """
+    r = rgb[0]
+    g = rgb[1]
+    b = rgb[2]
+    
+    if r+g+b < 3:
+        r = int(r*255)
+        g = int(g*255)
+        b = int(b*255)
+    hex = "#{:02x}{:02x}{:02x}".format(r,g,b)
+    return hex
