@@ -1,3 +1,11 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Aug 28 17:09:23 2018
+
+@author: rahulbiswas
+"""
+
 def get_highfire_starts(sdf,pre_stim_time,min_start_time):#final
     '''
     This function estimates and returns the first time (in miliseconds) the neuron starts high-firing.
@@ -6,22 +14,26 @@ def get_highfire_starts(sdf,pre_stim_time,min_start_time):#final
             Minimum latency (in seconds) after stimulus onset
     Output : Index in sdf array where high-firing after stimulus starts
     '''
+    from find_min_highfire import find_min_highfire
     import numpy as np
     from scipy.signal import argrelextrema
-    from scipy.stats import iqr
+    #from scipy.stats import iqr
+    ch=4.5;
     sdf_stim=sdf[(int(1000*(pre_stim_time))+min_start_time):]
     sdf_max_idx=np.argmax(sdf_stim)
     baseline = sdf[(int(1000*(pre_stim_time))-20):(int(1000*(pre_stim_time))+20)]
-    #thresh00=np.mean(baseline)*np.exp(2*np.std(np.log(np.abs(baseline))))
-    thresh00=np.mean(baseline) + 2*np.std(baseline)
+    if np.mean(baseline)==0:
+        return np.nan
+    thresh00=np.mean(baseline)*np.exp(ch*np.std(np.log(np.abs(baseline))))
+    #thresh00=np.mean(baseline) + 2*np.std(baseline)
     sdf_max_idx_all=argrelextrema(sdf_stim, np.greater_equal,order=2)[0]
-    sdf_min_idx_all=argrelextrema(sdf_stim, np.less_equal,order=2)[0]
-    sdf_min_max_idx_all=np.concatenate((sdf_max_idx_all,sdf_min_idx_all))
-    std_thresh_1=np.std(sdf_stim[sdf_max_idx_all])
-    std_thresh_2=np.std(sdf_stim[sdf_min_idx_all])
-    std_thresh=(std_thresh_1+std_thresh_2)/2;
-    thresh01=np.median(sdf_stim[sdf_max_idx_all])+2*std_thresh;
-    #thresh01=thresh00;
+#    sdf_min_idx_all=argrelextrema(sdf_stim, np.less_equal,order=2)[0]
+#    sdf_min_max_idx_all=np.concatenate((sdf_max_idx_all,sdf_min_idx_all))
+#    std_thresh_1=np.std(sdf_stim[sdf_max_idx_all])
+#    std_thresh_2=np.std(sdf_stim[sdf_min_idx_all])
+#    std_thresh=(std_thresh_1+std_thresh_2)/2
+#    thresh01=np.median(sdf_stim[sdf_max_idx_all])+2*std_thresh
+    thresh01=thresh00;
     thresh0 = (thresh00+thresh01)/2
     if len(sdf_max_idx_all)==0:
         out_idx = np.nan
@@ -57,23 +69,23 @@ def get_highfire_starts(sdf,pre_stim_time,min_start_time):#final
     sdf_max_idx=np.argmax(sdf_stim)
     baseline = sdf[(int(1000*(pre_stim_time))-20):(int(1000*(pre_stim_time))+20)]
     #thresh00=np.mean(baseline)*np.exp(2*np.std(np.log(np.abs(baseline))))
-    thresh00=np.mean(baseline) + 2*np.std(baseline)
+    thresh00=np.mean(baseline)*np.exp(ch*np.std(np.log(baseline)))
     sdf_max_idx_all=argrelextrema(sdf_stim, np.greater_equal,order=2)[0]
-    sdf_min_idx_all=argrelextrema(sdf_stim, np.less_equal,order=2)[0]
-    sdf_min_max_idx_all=np.concatenate((sdf_max_idx_all,sdf_min_idx_all))
-    std_thresh_1=np.std(sdf_stim[sdf_max_idx_all])
-    std_thresh_2=np.std(sdf_stim[sdf_min_idx_all])
-    std_thresh=(std_thresh_1+std_thresh_2)/2;
-    thresh01=np.median(sdf_stim[sdf_max_idx_all])+2*std_thresh;
-    #thresh01=thresh00;
+    #sdf_min_idx_all=argrelextrema(sdf_stim, np.less_equal,order=2)[0]
+    #sdf_min_max_idx_all=np.concatenate((sdf_max_idx_all,sdf_min_idx_all))
+    #std_thresh_1=np.std(sdf_stim[sdf_max_idx_all])
+    #std_thresh_2=np.std(sdf_stim[sdf_min_idx_all])
+    #std_thresh=(std_thresh_1+std_thresh_2)/2;
+    #thresh01=np.median(sdf_stim[sdf_max_idx_all])+2*std_thresh;
+    thresh01=thresh00;
     thresh0 = (thresh00+thresh01)/2
     if len(sdf_max_idx_all)==0:
         out_idx2=out_idx;
     else:
-        if np.all(sdf_stim[sdf_max_idx_all]<thresh0):
+        if np.all(-sdf_stim[sdf_max_idx_all]<thresh0):
             out_idx2=out_idx;
         else:
-            sdf_max_idx=np.min(sdf_max_idx_all[sdf_stim[sdf_max_idx_all]>=thresh0])
+            sdf_max_idx=np.min(sdf_max_idx_all[-sdf_stim[sdf_max_idx_all]>=thresh0])
 
             sdf_stim_subset=sdf_stim[:sdf_max_idx];out_idx2=0;
             while True:
@@ -99,9 +111,14 @@ def get_highfire_starts(sdf,pre_stim_time,min_start_time):#final
             out_idx2=out_idx2+min_start_time;
     l1=out_idx
     l2=out_idx2
-    if np.isnan(l1):
+    if np.isnan(l1) and np.isnan(l2):
+        return np.nan
+    elif np.isnan(l1) and ~np.isnan(l2):
+        return l2
+    elif np.isnan(l2) and ~np.isnan(l1):
         return l1
-    elif (l1==min_start_time and l2 > min_start_time) or (l2==min_start_time and l1 > min_start_time):
-        return np.max([l1,l2])
     else:
-        return np.min([l1,l2])
+        if (l1==min_start_time and l2 > min_start_time) or (l2==min_start_time and l1 > min_start_time):
+            return np.max([l1,l2])
+        else:
+            return np.min([l1,l2])
