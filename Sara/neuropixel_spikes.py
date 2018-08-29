@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Collection of functions for analysis of spikes from neuropixel probes
+Collection of functions for analysis of spikes from neuropixel probes.
+
+Some borrowed from https://github.com/baccuslab/pyret
 
 Created on Sun Aug 26 15:33:52 2018
 
@@ -8,8 +10,11 @@ Created on Sun Aug 26 15:33:52 2018
 """
 
 import numpy as np
+from scipy import signal
+from neuropixel_plots import plot_psth
 
-def get_psth(stim_df, unit_spikes, pre_time=.1, tail_time=0, bin_width=0.005):
+
+def get_psth(stim_df, unit_spikes, pre_time=.1, tail_time=0, bin_width=0.005, return_edges=False):
     """
     Parameters
     ----------
@@ -23,11 +28,13 @@ def get_psth(stim_df, unit_spikes, pre_time=.1, tail_time=0, bin_width=0.005):
         Time after stimulus presentation to include in PSTH
     bin_width : optional, 0.005 milliseconds
         Bin size
+    return_edges : optional, false
+        Return the bin left edges rather than bin centers
     
     Returns
     -------
     mean_fr : average PSTH (spikes/sec)
-    centers : centers of PSTH time bins
+    centers : centers or edges of PSTH time bins
     """
 
     all_trials = []
@@ -44,7 +51,11 @@ def get_psth(stim_df, unit_spikes, pre_time=.1, tail_time=0, bin_width=0.005):
         counts, edges = np.histogram(trial_spikes, bins)
         counts = counts/bin_width
         fr_per_trial.append(counts)
-    centers = edges[:-1] + np.diff(edges)/2
+    
+    if return_edges:
+        centers = edges[:-1]
+    else:
+        centers = edges[:-1] + np.diff(edges)/2
     
     return fr_per_trial, centers
 
@@ -74,3 +85,69 @@ def get_avg_psth(stim_df, unit_spikes, pre_time=.1, tail_time=0, showme=False):
     if showme:
         plot_psth(mean_fr, centers)
     return mean_fr, centers
+
+
+def estfr(bspk, time, sigma=0.01):
+    """
+    Estimate the instantaneous firing rate
+    
+    Parameters
+    ----------
+    bspk : array_like
+        Array of binned spike counts
+    
+    time : array_like
+        Array of time points corresponding to bin centers
+    
+    sigma : float, optional
+        The width of the Gaussian filter, in seconds
+    """
+    
+    # Estimate the time resolution
+    dt = float(np.mean(np.diff(time)))
+    
+    # Construct Gaussian filter, make sure it is normalized
+    tau = np.arange(-5 * sigma, 5 * sigma, dt)
+    filt = np.exp(-0.5 * (tau/sigma) ** 2)
+    filt = filt / np.sum(filt)
+    size = int(np.round(filt.size/2))
+    
+    # Filter binned spike times
+    return signal.fftconvolve(filt, bspk, mode='full')[size:size + time.size]/dt
+
+
+def binspikes(spk, time):
+    """
+    Bin spike times at the given resolution
+
+    Parameters
+    ----------
+    spk : array_like
+        Array of spike times
+    
+    time : array_like
+        The left edges of the time bins
+    
+    Returns
+    -------
+    bspk : array_like
+        Binned spike times
+    """
+    bin_edges = np.append(time, 2 * time[-1]-time[-2])
+    return np.histogram(spk, bins=bin_edges)[0].astype(float)
+
+
+def get_isi(x):
+    """
+    Calculates interspike intervals
+    
+    Parameters
+    ----------
+    x : array_like
+        Spike times
+    
+    Returns
+    -------
+    array_like : interspike intervals
+    """
+    return np.diff(x)

@@ -11,6 +11,8 @@ import pickle
 import pandas as pd
 from swdb_2018_neuropixels.ephys_nwb_adapter import NWB_adapter
 
+rf_path = os.path.normpath('./data/')
+
 def open_experiment(drive_path, expt_num=0, multi_probe=True):
     """
     Open a neuropixel probe experiment, return dataset object
@@ -55,6 +57,19 @@ def open_experiment(drive_path, expt_num=0, multi_probe=True):
     return data_set
 
 
+def check_folder(file_path):
+    """
+    Check if a folder exists, if not create a new one
+    
+    Parameters
+    ----------
+    file_path : str 
+        New/existing folder path
+    """
+    if not os.path.exists(file_path):
+        os.makedirs(file_path)
+
+
 def open_gabor_analysis(exp_num, probe_name):
     """
     Load a Gabor RF mapping analysis file
@@ -73,7 +88,7 @@ def open_gabor_analysis(exp_num, probe_name):
     if int(exp_num) in [84, 10, 21, 58]:
         fname = '{}multi_probe{}.pkl'.format(str(exp_num), probe_name[-1])
     else:
-        fname = '{}single_probe{}.pkl'.format(str(exp_num) probe_name[-1])
+        fname = '{}single_probe{}.pkl'.format(str(exp_num), probe_name[-1])
     
     if os.path.isfile(os.path.normpath(rf_path + '//' + fname)):
         gabor_analysis = pickle.load(open(fname))

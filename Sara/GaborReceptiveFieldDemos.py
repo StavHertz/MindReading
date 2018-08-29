@@ -40,7 +40,7 @@ manifest_file = os.path.join(drive_path,'ephys_manifest.csv')
 expt_info_df = pd.read_csv(manifest_file)
 
 # Import a 6 neuropixel probe experiment
-multi_probe_filename = 'ephys_multi_58.nwb'
+multi_probe_filename = 'ephys_multi_84.nwb'
 multi_probe_index = multi_probe_filename[-6:-4]
 nwb_file = os.path.join(drive_path, multi_probe_filename)
 print('Importing data file from {}'.format(nwb_file))

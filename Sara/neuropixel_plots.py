@@ -6,7 +6,8 @@ Created on Sat Aug 25 09:08:57 2018
 
 @author: sarap
 """
-
+import os 
+import sys 
 import numpy as np
 import matplotlib.pyplot as plt 
 import seaborn as sns
