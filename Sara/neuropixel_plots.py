@@ -14,7 +14,8 @@ import seaborn as sns
 sns.set_context('notebook', font_scale=1.4)
 
 __all__ = ['probe_heatmap', 'image_raster', 'image_psth', 'plot_psth',
-           'receptive_field_map', 'depth_latency_map', 'region_color', 'rgb2hex']
+           'receptive_field_map', 'depth_latency_map', 'depth_latency_scatter',
+           'region_color', 'rgb2hex']
 
 
 def probe_heatmap(psth_matrix, depth, edges, pre_time):
@@ -157,7 +158,7 @@ def receptive_field_map(rf_map, cmap=[]):
             sns.heatmap(rf_map[i,:,:], ax=ax[i], square=True, cbar=False, xticklabels=False, yticklabels=False, cmap=cmap)
     
     return fig, ax
-        
+
 
 def image_psth(img, unit_spikes, ax=[]):
     """
@@ -207,6 +208,57 @@ def image_psth(img, unit_spikes, ax=[]):
     ax.set_xlabel('Time (s)')
     plt.show()   
 
+    return fig, ax
+
+
+def depth_latency_scatter(depth_df, bins=10, save_path=[]):
+    """
+    Parameters
+    ----------
+    depth_df : dataframe
+        DataFrame from latency analysis
+    bins : optional, integer
+        Number of bins for histogram (default = 10)        
+    save_path : optional, str
+        If provided, figure will be saved as .png  
+    
+    Returns
+    -------
+    fig, ax : matplotlib handles
+    """
+
+    counts, edges = np.histogram(depth_df['depth'], bins=bins)
+    plt.plot(edges[:-1], counts)
+
+    latency_mean = np.zeros_like(counts)
+    latency_median = np.zeros_like(counts)
+    latency_std = np.zeros_like(counts)
+    
+    depths = depth_df['depth'].values
+    latencies = depth_df['latency'].values
+    # Remove the NaNs
+    depths = depths[depth_df['latency'].notna()]
+    latencies = latencies[depth_df['latency'].notna()]
+
+    for i in range(len(edges)-1):
+        ind = np.where((depths >= edges[i]) & (depths < edges[i+1]))
+        latency_mean[i] = np.mean(latencies[ind])
+        latency_median[i] = np.median(latencies[ind])
+        latency_std[i] = np.std(latencies[ind])
+    latency_sem = latency_std/len(latency_std)
+    
+    fig, ax = plt.subplots()
+    # Scatter plot of individual points
+    ax.plot(depths, latencies, marker='o', linestyle='none', color='k', alpha=0.2)
+    # Mean latency with errorbars
+    ax.errorbar(edges[:-1], latency_mean, yerr=latency_std, marker='o', label='mean')
+    # Median latency
+    ax.plot(edges[:-1], latency_median, marker='o', label='median')
+    ax.set_ylabel('Latency (ms)')
+    ax.set_xlabel('Depth (um)')
+    if save_path is not None:
+        fig.savefig(save_path)
+    
     return fig, ax
 
 

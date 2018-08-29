@@ -6,8 +6,10 @@ Created on Tue Aug 28 21:45:02 2018
 
 @author: sarap
 """
+import os
 import pickle
 import pandas as pd
+import numpy as np
 import seaborn as sns
 sns.set_context('talk', font_scale=2, rc={'lines.markeredgewidth': 2})
 sns.plotting_context(rc={'font.size': 18})
@@ -29,7 +31,7 @@ depth_df = pickle.load(open(os.path.join(latency_path, 'VISpm_natural_scenes_lat
 #%% Joint histograms
 fig, ax = plt.subplots()
 g = sns.jointplot(depth_df['latency'], depth_df['depth'], kind="kde", height=7, space=0, stat_func=None, color=region_color('VISpm'))
-g.savefig(os.path.join(latency_path, 'VISpm_natural_scenes_joint.png'))
+#g.savefig(os.path.join(latency_path, 'VISpm_natural_scenes_joint.png'))
 
 #%% Scatterplot
 fig, ax = plt.subplots()
@@ -85,8 +87,38 @@ for region in regions:
     if len(np.where(not_nan.values == True)[0]) < 3:
         continue
     
-    g = sns.jointplot(depth_df['latency'], depth_df['depth']*1e-3, kind='kde', space=0, stat_func=None, color=region_color(region))
+    g = sns.jointplot(depth_df['latency'], depth_df['depth'], kind="kde", height=7, space=0, stat_func=None, color=region_color('VISpm'))
+#     g = sns.jointplot(depth_df['latency'], depth_df['depth'], kind='kde', space=0, height=7, stat_func=None, color=region_color(region))
     g.plot_marginals(sns.rugplot, height=0.12, color="k")
     g.set_axis_labels(xlabel='{} latency (ms)'.format(region), ylabel='{} depth (mm) '.format(region))
     g.savefig(fpath + '.png')
     
+    counts, edges = np.histogram(depth_df['depth'], bins=10)
+    plt.plot(edges[:-1], counts)
+    
+    latency_mean = np.zeros_like(counts)
+    latency_median = np.zeros_like(counts)
+    latency_std = np.zeros_like(counts)
+    latency_sem = np.zeros_like(counts)
+    
+    depths = depth_df['depth'].values
+    latencies = depth_df['latency'].values
+    depths = depths[depth_df['latency'].notna()]
+    latencies = latencies[depth_df['latency'].notna()]
+    
+    for i in range(len(edges)-1):
+        ind = np.where((depths >= edges[i]) & (depths < edges[i+1]))
+        latency_mean[i] = np.mean(latencies[ind])
+        latency_median[i] = np.median(latencies[ind])
+        latency_std[i] = np.std(latencies[ind])
+    latency_sem = latency_std/len(latency_std)
+        
+    fig, ax = plt.subplots()
+    ax.plot(depths, latencies, marker='o', linestyle='none', color='k', alpha=0.2)
+    ax.errorbar(edges[:-1], latency_mean, yerr=latency_std, marker='o', label='mean')
+    ax.plot(edges[:-1], latency_median, marker='o', label='median')
+    ax.set_ylabel('Latency (ms)')
+    ax.set_xlabel('Depth (um)')
+    ax.set_title('{} - Natural Scenes'.format(region))
+    
+    fig.savefig(fpath + '_scatter.png')
