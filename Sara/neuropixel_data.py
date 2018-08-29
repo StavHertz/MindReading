@@ -95,3 +95,26 @@ def open_gabor_analysis(exp_num, probe_name):
     else:
         gabor_analysis = []
     return gabor_analysis
+
+
+def get_depth(dataset, probe_name):
+    """
+    Get a dictionary with units as keys and electrode depth as values
+    
+    Parameters
+    ----------
+    dataset : NWB dataset
+        Neuropixel dataset
+    probe_name : str
+        Which probe
+    
+    Return
+    ------
+    depths : dict
+    """
+    unit_df = dataset.unit_df[dataset.unit_df['probe'] == probe_name]
+    depths = {}
+    for i, row in unit_df.iterrows():
+        depths[row['unit_id']] = row['depth']
+    
+    return depths
