@@ -14,7 +14,7 @@ import seaborn as sns
 sns.set_context('notebook', font_scale=1.4)
 
 __all__ = ['probe_heatmap', 'image_raster', 'image_psth', 'plot_psth',
-           'receptive_field_map', 'region_color', 'rgb2hex']
+           'receptive_field_map', 'depth_latency_map', 'region_color', 'rgb2hex']
 
 
 def probe_heatmap(psth_matrix, depth, edges, pre_time):
@@ -211,6 +211,18 @@ def image_psth(img, unit_spikes, ax=[]):
 
 
 def depth_latency_map(depth_df, save_path):
+    """
+    Parameters
+    ----------
+    depth_df : dataframe
+        DataFrame from latency analysis
+    save_path : optional, str
+        If provided, figure will be saved as .png
+    
+    Returns
+    -------
+    g : seaborn.axisgrid.JointGrid
+    """
     g = sns.jointplot(depth_df['latency'], depth_df['depth']*1e-3, kind='kde', space=0, stat_func=None, color=region_color(region))
     g.plot_marginals(sns.rugplot, height=0.12, color="k")
     g.set_axis_labels(xlabel='{} latency (ms)'.format(region), ylabel='{} depth (mm) '.format(region))

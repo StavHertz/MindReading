@@ -38,6 +38,34 @@ ax.set_xlabel('latency (ms)')
 ax.set_ylabel('depth (um)')
 ax.set_title('')
 
+#%% Single plot
+counts, edges = np.histogram(depth_df['depth'], bins=10)
+plt.plot(edges[:-1], counts)
+
+latency_mean = np.zeros_like(counts)
+latency_median = np.zeros_like(counts)
+latency_std = np.zeros_like(counts)
+latency_sem = np.zeros_like(counts)
+
+depths = depth_df['depth'].values
+latencies = depth_df['latency'].values
+depths = depths[depth_df['latency'].notna()]
+latencies = latencies[depth_df['latency'].notna()]
+
+for i in range(len(edges)-1):
+    ind = np.where((depths >= edges[i]) & (depths < edges[i+1]))
+    latency_mean[i] = np.mean(latencies[ind])
+    latency_median[i] = np.median(latencies[ind])
+    latency_std[i] = np.std(latencies[ind])
+latency_sem = latency_std/len(latency_std)
+    
+fig, ax = plt.subplots()
+ax.plot(depths, latencies, marker='o', linestyle='none', color='k', alpha=0.2)
+ax.errorbar(edges[:-1], latency_mean, yerr=latency_std, marker='o', label='mean')
+ax.plot(edges[:-1], latency_median, marker='o', label='median')
+ax.set_ylabel('Latency (ms)')
+ax.set_xlabel('Depth (um)')
+
 #%% Joint histogram, option #2
 grid = sns.JointGrid(depth_df['latency'], depth_df['depth'], space=0, ratio=50)
 grid.plot_joint(plt.scatter, color="g")
