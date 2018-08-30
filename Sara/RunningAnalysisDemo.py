@@ -27,6 +27,10 @@ except:
     
 f.close()
 
+#%% 
+fig, ax = plt.subplots()
+plt.hist(running_speed, bins=75)
+ax.set_xlim(0, 75)
 
 #%% Check out the h5 file
 list_of_names = []

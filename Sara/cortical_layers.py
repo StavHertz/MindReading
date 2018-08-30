@@ -18,6 +18,7 @@ sns.plotting_context(rc={'font.size': 18})
 sns.set_style('white')
 sns.set_palette('deep')
 
+
 def units_by_depth(depth_df):
     """
     Get a list of the number of units at each depth. 
@@ -39,7 +40,7 @@ def units_by_depth(depth_df):
     return s.index, s.values
 
 
-def plot_units_by_depth(depth_df, ax=[], save_path=[]):
+def plot_units_by_depth(depth_df, ax=[], save_path=[], **kwargs):
     """
     Parameters
     ----------
@@ -52,10 +53,12 @@ def plot_units_by_depth(depth_df, ax=[], save_path=[]):
     ax : axis handle
     """
     if not ax:
-        ax = sns.countplot(x='depth', data=depth_df)
+        ax = sns.countplot(x='depth', data=depth_df, **kwargs)
     else:
-        sns.countplot(x='depth', data=depth_df, ax=ax)
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
+        sns.countplot(x='depth', data=depth_df, ax=ax, **kwargs)
+    # ax.get_xaxis().set_visible(False)
+    # ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
+    
     ax.set_xlabel('Depth (um)')
     ax.set_ylabel('Number of units')
 
@@ -80,7 +83,8 @@ def plot_latency_by_depth(depth_df, show_data=False, save_path=[], ax=[]):
     ax.set_ylim(0,)
     ax.set_xlabel('Depth (um)')
     ax.set_ylabel('Latency (ms)')
-    fig.savefig(save_path + '_smooth.png')
+    if save_path:
+        fig.savefig(save_path + '_smooth.png')
 
 
 def latency_by_depth(depth_df, sg_window=5, sg_bins=20, sg_order=2, use_median=False, ax=[], show_data=True, label=[]):
@@ -107,8 +111,12 @@ def latency_by_depth(depth_df, sg_window=5, sg_bins=20, sg_order=2, use_median=F
     Returns
     -------
     ax : matplotlib axes
-    foo : dictionary of depths, latencies and smoothed/binned plotted values
+    stim_dict : dict of depths, latencies and smoothed/binned plotted values
     """
+    
+    if not ax:
+        fig, ax = plt.subplots()
+    stim_dict = {}
 
     # Clip out the NaNs
     depths = depth_df['depth'].values
@@ -117,7 +125,7 @@ def latency_by_depth(depth_df, sg_window=5, sg_bins=20, sg_order=2, use_median=F
     latencies = latencies[depth_df['latency'].notna()]
     
     # Remove latencies beyond 250 ms (only important for drifting grating)
-    ind = np.where(latencies < 250)
+    ind = np.where(latencies < 200)
     if len(ind) is not len(latencies):
         print('{} of {} latencies over 250 ms'.format(len(latencies)-len(ind[0]), len(latencies)))
     depths = depths[ind]
@@ -126,7 +134,7 @@ def latency_by_depth(depth_df, sg_window=5, sg_bins=20, sg_order=2, use_median=F
     # Need at least as many data points as window for SG
     if len(latencies) < sg_window:
         print('Too few data points for smooth curve plot')
-        return
+        return ax, stim_dict
     
     counts, edges = np.histogram(depth_df['depth'], bins=sg_bins)
 
@@ -145,14 +153,11 @@ def latency_by_depth(depth_df, sg_window=5, sg_bins=20, sg_order=2, use_median=F
     if len(ind[0]) < sg_window:
         print('Number of data points ({}) less than SG window ({})'.format(
             len(ind[0]), sg_window))
-        return
+        return ax, stim_dict
     print('Bin size = {} ms'.format((np.max(edges)-np.min(edges))/sg_bins))
 
     x = bin_centers[ind]
     y = scipy.signal.savgol_filter(latency_metric[ind], sg_window, sg_order)
-
-    if not ax:
-        fig, ax = plt.subplots()
     
     ax.plot(x, y, linewidth=3, label=label)
     # Plot raw data points
@@ -162,10 +167,9 @@ def latency_by_depth(depth_df, sg_window=5, sg_bins=20, sg_order=2, use_median=F
     ax.set_xlabel('Depth (um)')
     ax.set_ylabel('Latency (ms)')
     
-    foo = {}
-    foo['smooth_depth'] = x
-    foo['smooth_latency'] = y
-    foo['depths'] = depths
-    foo['latencies'] = latencies
+    stim_dict['smooth_depth'] = x
+    stim_dict['smooth_latency'] = y
+    stim_dict['depths'] = depths
+    stim_dict['latencies'] = latencies
     
-    return ax, foo
+    return ax, stim_dict

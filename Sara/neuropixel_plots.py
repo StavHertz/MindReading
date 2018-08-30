@@ -384,22 +384,36 @@ def region_cmap(region_name, rot=0.1, plotme=False):
     
     if plotme:
         sns.palplot(sns.cubehelix_palette(start=ind, rot=rot))
+    
     return cmap
 
 
-def region_color(region_name):
+def region_color(region_name, light=False, sat=[]):
     """
     Parameters
     ----------
     region_name : str
         Structure recorded from
-    
+    light : optional, bool
+        Return lightest color of map (default = False)
+    sat : optional, float
+        Percent to desaturate output color (default = 0)
+        
     Returns
     -------
     Hex color value for plotting
     """
     cmap = region_cmap(region_name)
-    return rgb2hex(cmap.colors[-1])
+    
+    if light:
+        c = rgb2hex(cmap.colors[0])
+    else:
+        c = rgb2hex(cmap.colors[-1])
+    
+    if sat:
+        c = sns.desaturate(c, sat)
+    
+    return c
 
 
 def rgb2hex(rgb):

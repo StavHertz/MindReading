@@ -14,7 +14,7 @@ import scipy.signal
 import matplotlib.pylab as plt
 import seaborn as sns
 sns.set_context('talk', font_scale=2, rc={'lines.markeredgewidth': 2})
-sns.plotting_context(rc={'font.size': 18})
+sns.plotting_context(rc={'font.size': 17})
 sns.set_style('white')
 sns.set_palette('deep');
 
@@ -28,7 +28,7 @@ from SDF import SDF
 
 #%% IMPORT DATA IF NEEDED
 drive_path = os.path.normpath('d:/visual_coding_neuropixels/')
-dataset = open_experiment(drive_path, 3)
+dataset = open_experiment(drive_path, 2)
 #%% REGISTER PATH
 expt_index = dataset.nwb_path[-6:-4]
 print('Current experiment index: {}'.format(expt_index))
@@ -39,14 +39,16 @@ print('Importing from : ', latency_path)
 print('Saving to: ', depth_path)
 check_folder(depth_path)
 
-stim_name = 'drifting_gratings'
-nice_stim_name = 'Drifting Gratings'
+stim_name = 'natural_scenes'
+nice_stim_name = 'Natural Scenes'
 #%% ANALYSIS PARAMETERS
 sg_bins = 20
 sg_window = 5
 sg_order = 2
-hist_bins = 10
+bin_size = 50  # microns
 
+# This catches slow rise cells responding to drifting gratings
+latency_cutoff = 200  # ms
 # Plot mean and median with SEM
 do_errplot = True
 #%% Cycle through areas
@@ -76,14 +78,14 @@ for region in regions:
     latencies = latencies[depth_df['latency'].notna()]
     
     # Remove latencies beyond 250 ms (only important for drifting grating)
-    ind = np.where(latencies < 250)
+    ind = np.where(latencies < latency_cutoff)
     if len(ind) is not len(latencies):
         print('{} of {} latencies over 250 ms'.format(len(latencies)-len(ind[0]), len(latencies)))
     depths = depths[ind]
     latencies = latencies[ind]
 
     if do_errplot:
-        counts, edges = np.histogram(depths, bins=np.arange(np.min(depths), np.max(depths), 50))
+        counts, edges = np.histogram(depths, bins=np.arange(np.min(depths), np.max(depths), bin_size))
         latency_mean = np.zeros_like(counts)
         latency_median = np.zeros_like(counts)
         latency_std = np.zeros_like(counts)    
@@ -110,8 +112,8 @@ for region in regions:
         ax.set_ylim(0,)
         fig.savefig(spath + '_scatter.png')
 
-    
-    g = sns.jointplot(latencies, depths, kind="kde", height=7, space=0, stat_func=None, color=region_color(region))
+    #g = sns.jointplot(latencies, depths, kind='hex', color=region_color(region), height=7, space=0)
+    g = sns.jointplot(latencies, depths, kind="kde", height=7, space=0, stat_func=None, color=region_color(region), n_levels=20, )
     g.plot_marginals(sns.rugplot, height=0.1, color="k")
     g.set_axis_labels(xlabel='{} latency (ms)'.format(region), ylabel='{} depth (mm) '.format(region))
     g.savefig(spath + '.png')

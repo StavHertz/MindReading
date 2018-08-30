@@ -13,7 +13,7 @@ import pandas as pd
 import os
 import matplotlib.pyplot as plt
 import sys
-sys.path.append('/Users/SeB/Desktop/Allen Brain Workshop/SWDB_2018/resources/swdb_2018_neuropixels/')
+sys.path.append('d:/swdb_2018_neuropixels/')
 from swdb_2018_neuropixels.ephys_nwb_adapter import NWB_adapter
 import pickle
 from SDF import SDF
@@ -22,7 +22,7 @@ import time
 
 start_timer = time.time() # tic Measures function running speed. Works only on Macs
 # set path for manifest file 
-drive_path = '/Users/SeB/Desktop/Allen Brain Workshop/SWDB_2018/resources/visual_coding_neuropixels'
+drive_path = os.path.normpath('d:/visual_coding_neuropixels/')
 
 # identify manifest file
 manifest_file = os.path.join(drive_path,'ephys_manifest.csv')
@@ -34,7 +34,7 @@ expt_info_df = pd.read_csv(manifest_file)
 multi_probe_expt_info = expt_info_df[expt_info_df.experiment_type == 'multi_probe']
 
 #%%
-for experiment_counter in [2]: # for each multiprobe experiment
+for experiment_counter in [1]: # for each multiprobe experiment
 
     multi_probe_filename  = multi_probe_expt_info.iloc[experiment_counter]['nwb_filename']
     print('*****************************************')
