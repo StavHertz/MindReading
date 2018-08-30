@@ -14,8 +14,8 @@ import seaborn as sns
 sns.set_context('notebook', font_scale=1.4)
 
 __all__ = ['probe_heatmap', 'image_raster', 'image_psth', 'plot_psth',
-           'receptive_field_map', 'depth_latency_map', 'depth_latency_scatter',
-           'region_color', 'rgb2hex']
+           'receptive_field_map', 'depth_latency_map', 'depth_latency_hist',
+           'smooth_depth_latency', 'depth_latency_scatter', 'region_color', 'rgb2hex']
 
 
 def probe_heatmap(psth_matrix, depth, edges, pre_time):
@@ -211,7 +211,7 @@ def image_psth(img, unit_spikes, ax=[]):
     return fig, ax
 
 
-def depth_latency_scatter(depth_df, bins=10, save_path=[]):
+def depth_latency_hist(depth_df, bins=10, save_path=[]):
     """
     Parameters
     ----------
@@ -283,6 +283,78 @@ def depth_latency_map(depth_df, save_path):
     return g
 
 
+def smooth_depth_latency(depth_df, show_data=False, ax=[], sg_window=5, sg_order=2, sg_bins=20, use_median=False):
+    """
+    Parameters
+    ----------
+    depth_df : pandas.DataFrame
+        LatencyAnalysis dataframe with 'depth' and 'latency'
+    sg_window : optional, int
+        Points for Savitsky-Golay window (default = 5)
+    sg_order : optional, int
+        Polynomial for Savitsky-Golay window (default = 2)
+    sg_bins : optional, int
+        Number of bins to divide data (default = 20)
+    show_data : optional, bool
+        Plot the raw data as well (default = False)
+    use_median : optional, bool
+        Use median instead of mean (default = False)
+    ax : optional, matplotlib axes handle
+        Axis to plot to (default = new)
+    
+    Returns
+    -------
+    fig, ax : matplotlib figure handles
+    """
+    
+    if not ax:
+        fig, ax = plt.subplots()
+    else:
+        fig = []
+    
+    # Clip out the NaNs
+    depths = depth_df['depth'].values
+    latencies = depth_df['latency'].values
+    depths = depths[depth_df['latency'].notna()]
+    latencies = latencies[depth_df['latency'].notna()]
+    
+    # not_nan = depth_df['latency'].notna()
+    # Need at least as many data points as window for Savitsky-Golay smooth
+    if len(np.where(latencies.values == True)[0]) < sg_window:
+        print('Skipping smooth curve plot for {}'.format(region))
+        return
+    # Upsampled histogram
+    counts, edges = np.histogram(depth_df['depth'], bins=sg_bins)
+    # Get the mean latency for each bin
+    latency_mean = np.zeros_like(counts)
+    latency_median = np.zeros_like(counts)
+    for i in range(len(edges)-1):
+        ind = np.where((depths >= edges[i]) & (depths < edges[i+1]))
+        latency_mean[i] = np.mean(latencies[ind])
+        latency_median[i] = np.median(latencies[ind])
+    bin_centers = edges[:-1] - (edges[1]-edges[0])/2
+
+    # Get indices of empty bins
+    ind = np.where(latency_mean > 2)
+    if len(ind[0]) < sg_window:
+        print('Skipping smooth curve plot for {}'.format(region))
+        return
+    print('{}-{} bin size = {} ms'.format(expt_index, region, (np.max(edges)-np.min(edges))/sg_bins))
+    
+    # Smooth curve plot    
+    fig, ax = plt.subplots()
+    ax.plot(bin_centers[ind], scipy.signal.savgol_filter(latency_mean[ind], sg_window, sg_order), linewidth=3)
+    # Plot raw data points
+    ax.plot(depths, latencies, marker='o', linestyle='none', alpha=0.2, color='k')
+    ax.set_ylim(0,)
+    ax.set_title('{} - Natural Scenes ({})'.format(region, expt_index))
+    ax.set_xlabel('Depth (um)')
+    ax.set_ylabel('Latency (ms)')
+    fig.savefig(spath + '_smooth.png')
+    
+    return fig, ax
+    
+
 def region_cmap(region_name, rot=0.1, plotme=False):
     """
     Parameters
@@ -349,3 +421,4 @@ def rgb2hex(rgb):
         b = int(b*255)
     hex = "#{:02x}{:02x}{:02x}".format(r,g,b)
     return hex
+
