@@ -14,6 +14,11 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+sns.set_context('talk', font_scale=1.4, rc={'lines.markeredgewidth': 2})
+sns.plotting_context(rc={'font.size': 18})
+sns.set_style('whitegrid')
+sns.set_palette('deep');
+
 #%%
 latency_path = os.path.normpath('d:/Latencies/')
 sys.path.append('d:/resources/mindreading/sara')
@@ -51,8 +56,13 @@ def latency_depth_binstat(depth_df, color='k',shade=None, bin_size=50, ax=[]):
     x, _, _ = binned_statistic(depths, latencies, 'mean', bins=bins)
     x_sem, _, _ = binned_statistic(depths, latencies, statistic=sem, bins=bins)
     
+    ind = np.where((x > 2) & (x < 190))
+    x = x[ind]
+    x_sem = x_sem[ind]
+    bin_centers = bin_centers[ind]
+    
     ax.errorbar(bin_centers, x, color=color, linewidth=3)
-    ax.fill_between(bin_centers, x-x_sem, x+x_sem, color=shade)
+    ax.fill_between(bin_centers, x-x_sem, x+x_sem, color=shade, alpha=0.3)
     ax.set_ylim(0,)
     
     return ax
@@ -99,10 +109,16 @@ expt_index = 10
 stim_list = ['natural_scenes', 'static_gratings']
 
 for region in region_list:
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(1,1,figsize=(4,8))
     for stim in stim_list:
-        print(stim)
         depth_df = load_depth_df(expt_index, stim, region)
-        ax = latency_depth_binstat(depth_df, ax=ax, shade=stim_color(stim)[4][:-1])
-    ax.set_ylim(0,)
+        try:
+            ax = latency_depth_binstat(depth_df, ax=ax, bin_size=50, shade=stim_color(stim)[2][:-1], color=stim_color(stim)[-1][:-1])
+        except:
+            print('{}-{} did not plot'.format(expt_index, stim))
+    ax.set_xlabel('Depth (um)')
+    ax.set_ylabel('Latency (ms)')
+    ax.set_ylim(0,200)
     ax.set_title('{} Layers by Latency ({})'.format(region, expt_index))
+    fig.subplots_adjust(bottom=0.5)
+    fig.savefig(os.path.join(latency_path, '{}_{}_depthlatency_goodhist.png'.format(expt_index, region)), dpi=600)
