@@ -416,6 +416,35 @@ def region_color(region_name, light=False, sat=[]):
     return c
 
 
+def stim_color(stim_name, desat=[], ind=[]):
+    """
+    Parameters
+    ----------
+    stim_name : str
+        Stimulus name (drifting_gratings, static_gratings, natural_scenes)
+    desat : optional, float
+        Percent to desaturate colors by (default = 0)
+    ind : optional, integer
+        Choose just one of the color palette (default = [], returns all )
+    """
+    
+    if stim_name is 'natural_scenes':
+        cmap = sns.light_palette((260, 75, 60), input="husl")
+    elif stim_name is 'static_gratings':
+        cmap = sns.light_palette('seagreen')
+    else:
+        print('Unrecognized stimulus: {}'.format(stim_name))
+        return 
+    
+    if desat:
+        cmap = sns.desaturate(cmap, desat)
+        
+    if not ind:
+        return cmap
+    else:
+        return cmap[ind]
+
+
 def rgb2hex(rgb):
     """
     Convert an RGB value to hex

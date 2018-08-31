@@ -83,9 +83,11 @@ for region in regions:
         print('{} of {} latencies over 250 ms'.format(len(latencies)-len(ind[0]), len(latencies)))
     depths = depths[ind]
     latencies = latencies[ind]
+    
+    bins=np.arange(np.min(depths), np.max(depths), bin_size)
 
     if do_errplot:
-        counts, edges = np.histogram(depths, bins=np.arange(np.min(depths), np.max(depths), bin_size))
+        counts, edges = np.histogram(depths, bins=bins)
         latency_mean = np.zeros_like(counts)
         latency_median = np.zeros_like(counts)
         latency_std = np.zeros_like(counts)    
@@ -104,7 +106,7 @@ for region in regions:
     
         fig, ax = plt.subplots()
         ax.plot(depths, latencies, marker='o', linestyle='none', color='k', alpha=0.2)
-        ax.errorbar(bin_centers[ind], latency_mean[ind], yerr=latency_sem[ind], marker='o', label='mean')
+        ax.errorbar(bin_centers[ind], latency_mean[ind], yerr=latency_sem[ind], marker='o', label='mean', color=region_color(region))
         ax.plot(bin_centers[ind], latency_median[ind], marker='o', label='median')
         ax.set_ylabel('Latency (ms)')
         ax.set_xlabel('Depth (um)')
@@ -113,7 +115,7 @@ for region in regions:
         fig.savefig(spath + '_scatter.png')
 
     #g = sns.jointplot(latencies, depths, kind='hex', color=region_color(region), height=7, space=0)
-    g = sns.jointplot(latencies, depths, kind="kde", height=7, space=0, stat_func=None, color=region_color(region), n_levels=20, )
+    g = sns.jointplot(latencies, depths, kind="kde", height=7, space=0, stat_func=None, color=region_color(region), n_levels=20)
     g.plot_marginals(sns.rugplot, height=0.1, color="k")
     g.set_axis_labels(xlabel='{} latency (ms)'.format(region), ylabel='{} depth (mm) '.format(region))
     g.savefig(spath + '.png')
