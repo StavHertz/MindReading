@@ -11,7 +11,8 @@ import pickle
 import pandas as pd
 from swdb_2018_neuropixels.ephys_nwb_adapter import NWB_adapter
 
-rf_path = os.path.normpath('./data/')
+rf_path = os.path.normpath('D:/RFMaps/')
+latency_path = os.path.normpath('D:/Latencies/')
 
 def open_experiment(drive_path, expt_num=0, multi_probe=True):
     """
@@ -68,6 +69,7 @@ def check_folder(file_path):
     """
     if not os.path.exists(file_path):
         os.makedirs(file_path)
+        print('Created folder: {}'.format(file_path))
 
 
 def open_gabor_analysis(exp_num, probe_name):
@@ -97,6 +99,40 @@ def open_gabor_analysis(exp_num, probe_name):
     return gabor_analysis
 
 
+def load_depth_df(expt_index, stim_name, region, json=False):
+    """
+    Parameters
+    ----------
+    expt_index : int
+        Experiment index
+    stim_name : char
+        Stimulus name
+    region : char
+        Brain region
+    json : optional, bool
+        Load .json (default = false, loads as .pkl)
+    
+    Returns
+    -------
+    pandas.DataFrame
+    """
+    
+    fpath = os.path.join(latency_path, str(expt_index), '{}_{}_latency'.format(region, stim_name))
+    if json:
+        if not os.path.exists(fpath + '.json'):
+            print('No .json file found for {}-{}-{}'.format(expt_index, region, stim_name))
+            return
+        raise NotImplementedError('feeling lazy..')
+    else:
+        if not os.path.exists(fpath + '.pkl'):
+            print('No .pkl file found for {}-{}-{}'.format(expt_index, region, stim_name))
+            return
+        f = open(fpath+'.pkl')
+        depth_df = pickle.load(f)
+        f.close()
+    return depth_df
+    
+
 def get_depth(dataset, probe_name):
     """
     Get a dictionary with units as keys and electrode depth as values
@@ -118,3 +154,35 @@ def get_depth(dataset, probe_name):
         depths[row['unit_id']] = row['depth']
     
     return depths
+
+
+def split_latency_df(latency_dict, exp_index):
+    """
+    Conversion for output of Sebastien's latency analysis code
+    
+    Parameters
+    ----------
+    latency_dict : dict
+        Latency dictionary containing dataframes per stimulus
+    exp_index : str
+        Experiment number
+    """
+    save_path = os.path.join(latency_path, str(exp_index))
+    check_folder(save_path)
+    for stim in latency_dict.keys():
+        stim_df = latency_dict[stim]
+        for region in stim_df['region'].unique():
+            region_df = stim_df[stim_df['region'] == region]
+            fname = os.path.join(save_path, '{}_{}_latency'.format(region, stim))
+            # Save as .pkl file
+            print('Saving as: {}'.format(fname))
+            f = open(fname + '.pkl', 'wb')
+            pickle.dump(region_df, f)
+            f.close()
+            
+            # Also .json for now
+            region_df.to_json(fname + '.json', orient='split')
+            
+            
+        
+    

@@ -24,7 +24,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_context('talk', font_scale=2, rc={'lines.markeredgewidth': 2})
 sns.set_style('white')
-sns.set_palette('deep');
+sns.set_palette('deep')
+sns.plotting_context(rc={'font.size': 18})
+
 
 # %% Path-specific
 drive_path = os.path.normpath('d:/visual_coding_neuropixels')

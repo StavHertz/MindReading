@@ -17,24 +17,27 @@ import time
 import pickle
 import numpy as np
 import pandas as pd
+import matplotlib.axes as plt_axes
+import time
 
 import matplotlib.pyplot as plt
 
 import seaborn as sns
 sns.set_context('talk', font_scale=1.6, rc={'lines.markeredgewidth': 2})
+sns.plotting_context(rc={'font.size': 18})
 sns.set_style('white')
-sns.set_palette('deep');
+sns.set_palette('deep')
 
 #%% IMPORTS FROM MINDREADING REPOSITORY
-sys.path.append('D:/resources/mindreading_repo/mindreading/Sara/')
+sys.path.append('D:/resources/mindreading/Sara/')
 from neuropixel_data import open_experiment, check_folder, get_depth
 
-sys.path.append('D:/resources/mindreading_repo/mindreading/Sebastien/')
+sys.path.append('D:/resources/mindreading/Sebastien/')
 from SDF import SDF
 
 #%% IMPORT DATA IF NEEDED
 drive_path = os.path.normpath('d:/visual_coding_neuropixels/')
-dataset = open_experiment(drive_path, 1)
+dataset = open_experiment(drive_path, 2)
 #%% INFORMATION FOR SAVING
 expt_index = dataset.nwb_path[-6:-4]
 save_path = os.path.normpath('D:/Latencies/{}/'.format(expt_index))
@@ -44,7 +47,8 @@ check_folder(save_path)
 #%% DATA SETTINGS
 
 # Experiment to analyze:
-stim_name = 'natural_scenes'
+stim_name = 'drifting_gratings'  # 'natural_scenes'
+nice_stim_name = 'Drifting Gratings'  # 'Natural Scenes'
 stim_table = dataset.get_stimulus_table(stim_name)
 # stim_name = 'flash_decrement'
 # stim_table = stim_table[stim_table['color'] == -1]
@@ -57,15 +61,24 @@ pre_time = 100  # ms
 post_time = 300  # ms
 
 # Latency calculations
-multiplier= 3. #Multiplier of standard errors for threshold detection
-min_response_window = 20 #Minimum number of points that need to cross the threshold in a row
-baseline_window_size = 20 #size of the window to calculate baseline firing (1/2 of it)
+# Multiplier of standard errors for threshold detection
+if stim_name is 'drifing_gratings':
+    multiplier = 0.25
+else:
+    multiplier= 0.125
+# Minimum number of points that need to cross the threshold in a row
+min_response_window = 20 
+# size of the window to calculate baseline firing (1/2 of it)
+baseline_window_size = 20 
 
 # %% CALCULATED SETTINGS
+stimulus_duration = np.mean(ns_table.end.values - ns_table.start.values)*1e3
+pre_time = round((1/2.)*stimulus_duration,3)
+post_time = round((4/3.)*stimulus_duration,3)
 window_length = int(pre_time + post_time)
 num_trials = stim_table.shape[0]
-#%% MAIN CALCULATION
 
+#%% MAIN CALCULATION
 for region in region_list:
     # Time single region
     start_timer = time.time()
@@ -121,11 +134,11 @@ for region in region_list:
             baseline_CI95 = np.mean(CI95_SDF[pre_time-baseline_window_size:pre_time+baseline_window_size]) 
             baseline_CI99 = np.mean(CI99_SDF[pre_time-baseline_window_size:pre_time+baseline_window_size])
     
-            post_stimulus_sdf = mean_SDF[pre_time:] #the rest of the sdf after stim onset
+            post_stimulus_sdf = mean_SDF[pre_time:pre_time+int(stimulus_duration)] #the rest of the sdf after stim onset
             
             #Defines upper threshold as a multiplier of std    
-            positive_threshold = baseline_mean + multiplier * baseline_CI95 
-            negative_threshold = baseline_mean - multiplier * baseline_CI95
+            positive_threshold = baseline_mean + multiplier * std_SDF 
+            negative_threshold = baseline_mean - multiplier * std_SDF
         
             #Identify indices that pass the positive threshold
             pos_thresh_inds = post_stimulus_sdf > positive_threshold 
@@ -148,14 +161,15 @@ for region in region_list:
                         first_occur = c_ind
                         response_type = -1
                         break
-        
-            response_time = np.nan #visual response time is empty by default
+                    
+            # visual response time is empty by default
+            response_time = np.nan 
             
             # Define response time as the first occurence, plus the baseline time window
             if first_occur > -1: #if a response was found
                 response_time = first_occur + pre_time
             # If the error is null, it is because of a non-firing unit. Discard those
-            if positive_threshold < 0.1: 
+            if positive_threshold < 1: 
                 response_time = np.nan
             latency = response_time - pre_time
                   
@@ -176,24 +190,28 @@ for region in region_list:
     
     # % PLOT EACH REGION
     #Plot histogram of latencies for this region
-    vals = Big_dataframe['latency'].values.astype(float) #transforms datatype  to allow removing the nan entries
+    # Transforms datatype to allow removing the nan entries
+    vals = Big_dataframe['latency'].values.astype(float) 
     vals_nonan = vals[~np.isnan(vals)] #remove the nans
     counts, edges = np.histogram(vals_nonan, bins=20)
     centers = edges[:1] - (edges[1]-edges[0])/2
     mean_latency = np.mean(vals_nonan) #calculate the mean latency
     median_latency = np.median(vals_nonan) #calculate the median latency
 
-    fig,ax1 = plt.subplots(1,1,figsize=(8,5)) #initialize subplot
-    plt.hist(vals_nonan, 20) #plot the histogram
-    ax1.set_xlabel('Latency of visual response (msec)')
-    ax1.set_ylabel('Number of units')
-    ax1.set_title('Natural scenes in ' + str(struct))
-    y_axis_max = plt_axes.Axes.get_ylim(ax1)[1] 
-    ax1.vlines(mean_latency, 0, y_axis_max)
-    ax1.vlines(median_latency, 0, y_axis_max)
-    plt.text(mean_latency+10, y_axis_max, 'mean = ' + str(round(mean_latency)), fontsize=18)
-    plt.text(ax1.get_xlim()[0]+15, y_axis_max, 'median = ' + str(round(median_latency)), fontsize=18)
-    plt.grid(True)    
-    fig.savefig(fname + '.png')
+    try:
+        fig,ax1 = plt.subplots(1,1,figsize=(8,5)) #initialize subplot
+        plt.hist(vals_nonan, 20) #plot the histogram
+        ax1.set_xlabel('Latency of visual response (msec)')
+        ax1.set_ylabel('Number of units')
+        ax1.set_title(nice_stim_name + ' in ' + str(region))
+        y_axis_max = plt_axes.Axes.get_ylim(ax1)[1] 
+        ax1.vlines(mean_latency, 0, y_axis_max)
+        ax1.vlines(median_latency, 0, y_axis_max)
+        plt.text(mean_latency+10, y_axis_max, 'mean = ' + str(round(mean_latency)), fontsize=18)
+        plt.text(ax1.get_xlim()[0]+15, y_axis_max, 'median = ' + str(round(median_latency)), fontsize=18)
+        plt.grid(True)    
+        fig.savefig(fname + '.png')
+    except:
+        print('Plot for {} failed'.format(region))
             
 print('Latency analysis completed in ' + str(round(time.time()-start_timer)) + 'seconds')

@@ -1,0 +1,5 @@
+Zhuang et al (2017) An extended retinotopic map of mouse cortex. ELife
+- Show retinotopic sampling of each visual area, useful for comparing results of Gabor RF analysis by region.
+
+Polack & Conteras (2012) Long-range parallel processing and local recurrent activity in the visual cortex. J Neurosci.
+- See latency maps in Figure 2
