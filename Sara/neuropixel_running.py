@@ -31,15 +31,15 @@ def get_running_speed_by_frame(rtime, rspeed, frame_table):
         ind = np.where((rtime >= row['start']) & (rtime < row['end']))
         stim_speed = rspeed[ind].astype(float)
         avg_speed[i] = np.mean(stim_speed)
-        if avg_speed[i] >= SPEED_CUTOFF:
-            speed_binary = True
+        if np.mean(stim_speed) >= SPEED_CUTOFF:
+            speed_binary[i] = 1
         else:
-            speed_binary = False
-        i += 1  # indices are not sequential
+            speed_binary[i] = 0
+        i += 1  # stim table indices are not sequential
     
     new_frame_table = frame_table.copy()
     new_frame_table['speed'] = avg_speed
-    new_frame_table['running'] = speed_binary
+    new_frame_table['running'] = speed_binary.astype(bool)
     return new_frame_table
 
 
@@ -54,6 +54,10 @@ def get_running_speed(dataset):
     -------
     running_timestamps
     running_speed
+    
+    Notes
+    -----
+    Copied from Shawn's function in swdb_2018_tools
     """
     f = h5py.File(dataset.nwb_path, 'r') 
     
